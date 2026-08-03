@@ -459,19 +459,19 @@ local uci = require 'luci.model.uci'.cursor()
 
 <script type="text/javascript">//<![CDATA[
 var translations = {
-	// Peer表格头部 (来自EasyTier CLI源码)
+	// Peer
 	"ipv4": "<%:IPv4 Address%>",
-	"hostname": "<%:Hostname%>", 
+	"hostname": "<%:Hostname%>",
 	"cost": "<%:Route Cost%>",
 	"lat(ms)": "<%:Latency(ms)%>",
 	"loss": "<%:Loss Rate%>",
 	"rx": "<%:RX Traffic%>",
-	"tx": "<%:TX Traffic%>", 
+	"tx": "<%:TX Traffic%>",
 	"tunnel": "<%:Tunnel Protocol%>",
 	"NAT": "<%:NAT Type%>",
 	"version": "<%:Version%>",
-	
-	// Node表格头部
+
+	// Node
 	"Virtual IP": "<%:Virtual IP%>",
 	"Hostname": "<%:Hostname%>",
 	"Proxy CIDRs": "<%:Proxy CIDRs%>",
@@ -480,6 +480,11 @@ var translations = {
 	"Public IPv6": "<%:Public IPv6%>",
 	"Listener": "<%:Listener%>",
 	"proxy_cidrs": "<%:Proxy CIDRs%>",
+	"UDP Stun Type": "<%:UDP Stun Type%>",
+	"Interface IPv4": "<%:Interface IPv4%>",
+	"Interface IPv6": "<%:Interface IPv6%>",
+
+	// Route
 	"next_hop_ipv4": "<%:Next Hop IPv4%>",
 	"next_hop_hostname": "<%:Next Hop Hostname%>",
 	"next_hop_lat": "<%:Next Hop Latency%>",
@@ -489,44 +494,29 @@ var translations = {
 	"next_hop_hostname_lat_first": "<%:Next Hop Hostname Lat First%>",
 	"path_len_lat_first": "<%:Path Length Lat First%>",
 	"path_latency_lat_first": "<%:Path Latency Lat First%>",
-	"UDP Stun Type": "<%:UDP Stun Type%>",
-	"Interface IPv4": "<%:Interface IPv4%>",
-	"Interface IPv6": "<%:Interface IPv6%>",
-	
-	// Route表格头部
-	"next_hop_ipv4": "<%:Next Hop IPv4%>",
-	"next_hop_hostname": "<%:Next Hop Hostname%>", 
-	"next_hop_lat": "<%:Next Hop Latency%>",
-	"path_len": "<%:Path Length%>",
-	"path_latency": "<%:Path Latency%>",
-	
-	// Connector表格头部
+
+	// Connector
 	"src": "<%:Source%>",
-	"dst": "<%:Destination%>", 
+	"dst": "<%:Destination%>",
 	"start_time": "<%:Start Time%>",
 	"state": "<%:State%>",
+	"status": "<%:Status%>",
 	"transport_type": "<%:Transport Type%>",
 	"last_update_time": "<%:Last Update Time%>",
-	
-	// PeerCenter表格头部
+
+	// PeerCenter
 	"node_id": "<%:Node ID%>",
 	"direct_peers": "<%:Direct Peers%>",
-	
-	// Stats表格头部
+
+	// Stats headers
 	"Metric Name": "<%:Metric Name%>",
 	"Value": "<%:Value%>",
 	"Labels": "<%:Labels%>",
-	
-	// Listener相关
-	"Listener": "<%:Listener%>",
-	"status": "<%:Status%>",
-	"client_config_start": "<%:Client Config Start%>",
-	"client_config_end": "<%:Client Config End%>",
-	
-	// 状态值翻译
+
+	// Cell status values
 	"Local": "<%:Local%>",
 	"PortRestricted": "<%:Port Restricted%>",
-	"NoPat": "<%:No PAT%>", 
+	"NoPat": "<%:No PAT%>",
 	"DIRECT": "<%:Direct%>",
 	"unknown": "<%:Unknown%>",
 	"Connected": "<%:Connected%>",
@@ -538,66 +528,10 @@ var translations = {
 	"AddressRestricted": "<%:Address Restricted%>",
 	"p2p": "<%:P2P%>",
 	"PublicServer_": "<%:Server%>",
-	
-	// STUN相关
-	"StunInfo": "<%:STUN Info%>",
-	"udp_nat_type": "<%:UDP NAT Type%>",
-	"tcp_nat_type": "<%:TCP NAT Type%>",
-	
-	// 错误信息
-	"Error": "<%:Error%>",
-	"Invalid service name": "<%:Invalid Service Name%>",
-	"proto name": "<%:Protocol Name%>",
-	
-	"next_hop_ipv4_lat_first": "<%:Next Hop IPv4 Lat First%>",
-	"next_hop_hostname_lat_first": "<%:Next Hop Hostname Lat First%>",
-	"path_len_lat_first": "<%:Path Length Lat First%>",
-	"path_latency_lat_first": "<%:Path Latency Lat First%>",
-	
-	// 更多CLI输出翻译
-	"response": "<%:Response%>",
-	"ListConnectorResponse": "<%:List Connector Response%>",
-	"connectors": "<%:Connectors%>",
-	"Connector": "<%:Connector%>",
-	"url": "<%:URL%>",
-	"Url": "<%:URL%>",
-	"status": "<%:Status%>",
-	"stun info": "<%:STUN Info%>",
-	"StunInfo": "<%:STUN Info%>",
-	"udp_nat_type": "<%:UDP NAT Type%>",
-	"tcp_nat_type": "<%:TCP NAT Type%>",
-	"last_update_time": "<%:Last Update Time%>",
-	"public_ip": "<%:Public IP%>",
-	"min_port": "<%:Min Port%>",
-	"max_port": "<%:Max Port%>",
-	"Invalid service name": "<%:Invalid Service Name%>",
-	"proto name": "<%:Protocol Name%>",
-	"portal_name": "<%:Portal Name%>",
-	"wireguard": "<%:WireGuard%>",
-	"client_config_start": "<%:Client Config Start%>",
-	"client_config_end": "<%:Client Config End%>",
-	"connected_clients": "<%:Connected Clients%>",
-	"wireguard": "<%:WireGuard%>",
-	"client_config_start": "<%:Client Config Start%>",
-	"client_config_end": "<%:Client Config End%>",
-	"connected_clients": "<%:Connected Clients%>",
-	"AclStats": "<%:ACL Stats%>",
-	"Global": "<%:Global%>",
-	"CacheMaxSize": "<%:Cache Max Size%>",
-	"CacheSize": "<%:Cache Size%>",
-	"ConnTrack": "<%:Connection Track%>",
-	"Rules": "<%:Rules%>",
-	"ListMappedListenerResponse": "<%:List Mapped Listener Response%>",
-	
-	// VPN Portal特殊处理
-	"ERROR: Wireguard VPN Portal Not Started": "<%:ERROR: Wireguard VPN Portal Not Started%>",
-	
-	// 错误信息翻译
-	"no running instances found": "<%:no running instances found%>",
-	
-	// 统计指标翻译
+
+	// Stats metrics / labels
 	"compression_bytes_rx_before": "<%:Compression RX Before%>",
-	"compression_bytes_rx_after": "<%:Compression RX After%>", 
+	"compression_bytes_rx_after": "<%:Compression RX After%>",
 	"compression_bytes_tx_before": "<%:Compression TX Before%>",
 	"compression_bytes_tx_after": "<%:Compression TX After%>",
 	"peer_rpc_client_rx": "<%:Peer RPC Client RX%>",
@@ -615,55 +549,6 @@ var translations = {
 	"traffic_packets_self_tx": "<%:Traffic Packets Self TX%>",
 	"traffic_packets_forwarded": "<%:Traffic Packets Forwarded%>",
 	"traffic_bytes_forwarded": "<%:Traffic Bytes Forwarded%>",
-	
-	// 标签字段翻译
-	"network_name": "<%:Network Name%>",
-	"dst_peer_id": "<%:Destination Peer ID%>",
-	"src_peer_id": "<%:Source Peer ID%>",
-	"method_name": "<%:Method Name%>",
-	"service_name": "<%:Service Name%>",
-	"success": "<%:Success%>",
-	"error": "<%:Error%>",
-	"failure": "<%:Failure%>",
-	"timeout": "<%:Timeout%>",
-	
-	"STUN": "<%:STUN%>",
-	"ACL": "<%:ACL%>",
-	
-	// 服务名翻译
-	"OspfRouteRpc": "<%:OSPF Route RPC%>",
-	"PeerCenterRpc": "<%:Peer Center RPC%>",
-	
-	// 错误信息翻译
-	"Error": "<%:Error%>",
-	"error": "<%:Error%>",
-	"Caused by": "<%:Caused by%>",
-	"failed to get peer manager client": "<%:failed to get peer manager client%>",
-	"failed to get peer center client": "<%:failed to get peer center client%>",
-	"failed to connect to server": "<%:failed to connect to server%>",
-	"URL": "<%:URL%>",
-	"Connection refused": "<%:Connection refused%>",
-	"scheme": "<%:scheme%>",
-	"cannot_be_a_base": "<%:cannot_be_a_base%>",
-	"username": "<%:username%>",
-	"password": "<%:password%>",
-	"host": "<%:host%>",
-	"port": "<%:port%>",
-	"path": "<%:path%>",
-	"query": "<%:query%>",
-	"fragment": "<%:fragment%>",
-	"Some": "<%:Some%>",
-	"None": "<%:None%>",
-	"Domain": "<%:Domain%>",
-	"Failed to connect to RPC server. Please check if the RPC port is set to 15888 in the configuration.": "<%:Failed to connect to RPC server. Please check if the RPC port is set to 15888 in the configuration.%>",
-	"Configuration File Content": "<%:Configuration File Content%>",
-	
-	// 方法名值翻译
-	"sync_route_info": "<%:Sync Route Info%>",
-	"get_global_peer_map": "<%:Get Global Peer Map%>",
-	"report_peers": "<%:Report Peers%>",
-	
-	// Stats指标名称翻译
 	"traffic_control_bytes_rx": "<%:Traffic Control Bytes RX%>",
 	"traffic_control_bytes_tx": "<%:Traffic Control Bytes TX%>",
 	"traffic_control_bytes_rx_by_instance": "<%:Traffic Control Bytes RX By Instance%>",
@@ -672,8 +557,28 @@ var translations = {
 	"traffic_control_packets_tx": "<%:Traffic Control Packets TX%>",
 	"traffic_control_packets_rx_by_instance": "<%:Traffic Control Packets RX By Instance%>",
 	"traffic_control_packets_tx_by_instance": "<%:Traffic Control Packets TX By Instance%>",
+	"network_name": "<%:Network Name%>",
+	"dst_peer_id": "<%:Destination Peer ID%>",
+	"src_peer_id": "<%:Source Peer ID%>",
+	"method_name": "<%:Method Name%>",
+	"service_name": "<%:Service Name%>",
 	"from_instance_id": "<%:From Instance ID%>",
-	"to_instance_id": "<%:To Instance ID%>"
+	"to_instance_id": "<%:To Instance ID%>",
+	"success": "<%:Success%>",
+	"error": "<%:Error%>",
+	"failure": "<%:Failure%>",
+	"timeout": "<%:Timeout%>",
+	"OspfRouteRpc": "<%:OSPF Route RPC%>",
+	"PeerCenterRpc": "<%:Peer Center RPC%>",
+	"sync_route_info": "<%:Sync Route Info%>",
+	"get_global_peer_map": "<%:Get Global Peer Map%>",
+	"report_peers": "<%:Report Peers%>",
+
+	// Remaining UI strings
+	"ERROR: Wireguard VPN Portal Not Started": "<%:ERROR: Wireguard VPN Portal Not Started%>",
+	"no running instances found": "<%:no running instances found%>",
+	"Failed to connect to RPC server. Please check if the RPC port is set to 15888 in the configuration.": "<%:Failed to connect to RPC server. Please check if the RPC port is set to 15888 in the configuration.%>",
+	"Configuration File Content": "<%:Configuration File Content%>"
 };
 
 var currentTab = 'node';
@@ -782,63 +687,17 @@ function parseTable(content, tabName) {
 	if (content.indexOf('failed to get peer manager client') !== -1 || 
 	    content.indexOf('failed to get peer center client') !== -1 || 
 	    content.indexOf('Connection refused') !== -1) {
-		var translatedContent = content
-			.replace(/failed to get peer manager client/g, tr('failed to get peer manager client'))
-			.replace(/failed to get peer center client/g, tr('failed to get peer center client'))
-			.replace(/failed to connect to server:/g, tr('failed to connect to server') + ':')
-			.replace(/Connection refused/g, tr('Connection refused'))
-			.replace(/\bscheme:/g, tr('scheme') + ':')
-			.replace(/cannot_be_a_base:/g, tr('cannot_be_a_base') + ':')
-			.replace(/\busername:/g, tr('username') + ':')
-			.replace(/\bpassword:/g, tr('password') + ':')
-			.replace(/\bhost:/g, tr('host') + ':')
-			.replace(/\bport:/g, tr('port') + ':')
-			.replace(/\bpath:/g, tr('path') + ':')
-			.replace(/\bquery:/g, tr('query') + ':')
-			.replace(/\bfragment:/g, tr('fragment') + ':')
-			.replace(/Some\(/g, tr('Some') + '(')
-			.replace(/None/g, tr('None'))
-			.replace(/Domain\(/g, tr('Domain') + '(');
-		
 		return '<div class="et-error">' +
 			'<div style="font-weight:600;margin-bottom:8px;">' + tr('Failed to connect to RPC server. Please check if the RPC port is set to 15888 in the configuration.') + '</div>' +
-			'<div style="font-size:12px;opacity:0.9;white-space:pre-wrap;font-family:monospace;line-height:1.6;">' + escapeHtml(translatedContent) + '</div>' +
+			'<div style="font-size:12px;opacity:0.9;white-space:pre-wrap;font-family:monospace;line-height:1.6;">' + escapeHtml(content) + '</div>' +
 			'</div>';
 	}
 	
 	var lines = content.split(/\r?\n/).filter(function(l) { return l.trim() !== ''; });
 	
 	if (lines.length === 0 || lines[0].indexOf('|') === -1) {
-		// 对非表格内容进行全面翻译处理
-		var translatedContent = content;
-		
-		// 处理结构化数据翻译
-		for (var key in translations) {
-			if (translations.hasOwnProperty(key)) {
-				var regex = new RegExp('\\b' + key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\b', 'gi');
-				translatedContent = translatedContent.replace(regex, translations[key]);
-			}
-		}
-		
-		// 处理标签内容翻译 (key=value格式)
-		translatedContent = translatedContent.replace(/(\w+)=/g, function(match, key) {
-			return (translations[key] ? tr(key) : key) + '=';
-		});
-		
-		// 处理带编号的Listener
-		translatedContent = translatedContent.replace(/\bListener\s+\d+\b/g, function(match) {
-			return match.replace('Listener', tr('Listener'));
-		});
-		
-		// 处理PublicServer_包装为标签样式
-		translatedContent = translatedContent.replace(/PublicServer_/g, '<span style="background:#e3f2fd;color:#1976d2;padding:2px 4px;border-radius:4px;font-size:11px;font-weight:500;">' + tr('PublicServer_') + '</span>');
-		
-		// 处理特殊格式
-		translatedContent = translatedContent.replace(/###############\s*([^#]+)\s*###############/g, function(match, p1) {
-			return '############### ' + tr(p1.trim()) + ' ###############';
-		});
-		
-		return '<div class="et-pre">' + (translatedContent.indexOf('<svg') !== -1 || translatedContent.indexOf('<span') !== -1 ? translatedContent : escapeHtml(translatedContent)) + '</div>';
+		// Debug/结构化 dump 保留英文原文，不做字段翻译
+		return renderCopyablePre(content);
 	}
 	
 	var isNodeTable = tabName === 'node';
