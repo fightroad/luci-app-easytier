@@ -444,72 +444,17 @@ local uci = require 'luci.model.uci'.cursor()
 			<%:Collecting data...%>
 		</div>
 	</div>
-	<div class="et-tab-content" id="tab_peer">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_route">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_connector">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_stun">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_peercenter">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_vpnportal">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_proxy">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_acl">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_mappedlistener">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_stats">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
-	<div class="et-tab-content" id="tab_cmdline">
-		<div class="et-loading">
-			<div class="et-loading-spinner"></div>
-			<%:Collecting data...%>
-		</div>
-	</div>
+	<div class="et-tab-content" id="tab_peer"></div>
+	<div class="et-tab-content" id="tab_route"></div>
+	<div class="et-tab-content" id="tab_connector"></div>
+	<div class="et-tab-content" id="tab_stun"></div>
+	<div class="et-tab-content" id="tab_peercenter"></div>
+	<div class="et-tab-content" id="tab_vpnportal"></div>
+	<div class="et-tab-content" id="tab_proxy"></div>
+	<div class="et-tab-content" id="tab_acl"></div>
+	<div class="et-tab-content" id="tab_mappedlistener"></div>
+	<div class="et-tab-content" id="tab_stats"></div>
+	<div class="et-tab-content" id="tab_cmdline"></div>
 </div>
 
 <script type="text/javascript">//<![CDATA[
@@ -733,6 +678,22 @@ var translations = {
 
 var currentTab = 'node';
 var isRefreshing = false;
+var pendingTab = null;
+var conninfoUrl = '<%=url("admin", "vpn", "easytier", "api_conninfo")%>';
+var sectionKeys = {
+	node: 'node',
+	peer: 'peer',
+	route: 'route',
+	connector: 'connector',
+	stun: 'stun',
+	peercenter: 'peer_center',
+	vpnportal: 'vpn_portal',
+	proxy: 'proxy',
+	acl: 'acl',
+	mappedlistener: 'mapped_listener',
+	stats: 'stats',
+	cmdline: 'cmdline'
+};
 
 function tr(text) {
 	return translations[text] || text;
@@ -814,43 +775,7 @@ function parseTable(content, tabName) {
 
 	// 启动参数可能包含管道符等特殊字符，必须先于表格解析处理。
 	if (tabName === 'cmdline') {
-		var html = renderCopyablePre(content);
-
-		// 检查是否使用配置文件启动
-		if (content.indexOf('--config-file') !== -1 || content.match(/-c\s+\//)) {
-			XHR.get('<%=url("admin/vpn/easytier/api_conninfo")%>', null, function(x, data) {
-				if (data && data.config_file) {
-					var configDiv = document.createElement('div');
-					configDiv.className = 'et-pre';
-					configDiv.style.marginTop = '16px';
-					configDiv.style.borderTop = '2px solid var(--border-color)';
-					configDiv.style.paddingTop = '16px';
-
-					var title = document.createElement('div');
-					title.style.fontWeight = '600';
-					title.style.marginBottom = '8px';
-					title.style.color = 'var(--primary-color)';
-					title.textContent = tr('Configuration File Content') + ':';
-
-					var contentDiv = document.createElement('pre');
-					contentDiv.style.margin = '0';
-					contentDiv.style.whiteSpace = 'pre-wrap';
-					contentDiv.style.overflowWrap = 'anywhere';
-					contentDiv.style.wordBreak = 'break-word';
-					contentDiv.textContent = data.config_file;
-
-					configDiv.appendChild(title);
-					configDiv.appendChild(contentDiv);
-
-					var container = document.getElementById('tab_cmdline');
-					if (container) {
-						container.appendChild(configDiv);
-					}
-				}
-			});
-		}
-
-		return html;
+		return renderCopyablePre(content);
 	}
 	
 	// 连接失败错误处理
@@ -1000,8 +925,6 @@ function parseTable(content, tabName) {
 }
 
 function switchTab(tabName) {
-	if (isRefreshing) return;
-	
 	var tabs = document.querySelectorAll('.et-tab');
 	var contents = document.querySelectorAll('.et-tab-content');
 	
@@ -1019,79 +942,132 @@ function switchTab(tabName) {
 		activeTab.classList.add('active');
 		activeContent.classList.add('active');
 		currentTab = tabName;
+		loadSection(tabName);
 	}
 }
 
-function refreshConnInfo() {
-	if (isRefreshing) return;
-	
+function showTabLoading(tabName) {
+	var el = document.getElementById('tab_' + tabName);
+	if (!el) return;
+	el.innerHTML = '<div class="et-loading"><div class="et-loading-spinner"></div><%:Collecting data...%></div>';
+}
+
+function appendConfigFile(container, configFile) {
+	if (!container || !configFile) return;
+
+	var configDiv = document.createElement('div');
+	configDiv.className = 'et-pre';
+	configDiv.style.marginTop = '16px';
+	configDiv.style.borderTop = '2px solid var(--border-color)';
+	configDiv.style.paddingTop = '16px';
+
+	var title = document.createElement('div');
+	title.style.fontWeight = '600';
+	title.style.marginBottom = '8px';
+	title.style.color = 'var(--primary-color)';
+	title.textContent = tr('Configuration File Content') + ':';
+
+	var contentDiv = document.createElement('pre');
+	contentDiv.style.margin = '0';
+	contentDiv.style.whiteSpace = 'pre-wrap';
+	contentDiv.style.overflowWrap = 'anywhere';
+	contentDiv.style.wordBreak = 'break-word';
+	contentDiv.textContent = configFile;
+
+	configDiv.appendChild(title);
+	configDiv.appendChild(contentDiv);
+	container.appendChild(configDiv);
+}
+
+function updateSection(tabName, data) {
+	var key = sectionKeys[tabName];
+	var el = document.getElementById('tab_' + tabName);
+	if (!el || !key || !data || data[key] === undefined) return;
+
+	el.innerHTML = parseTable(data[key], tabName);
+	if (tabName === 'cmdline' && data.config_file) {
+		appendConfigFile(el, data.config_file);
+	}
+}
+
+function showTabError(tabName, message) {
+	var el = document.getElementById('tab_' + tabName);
+	if (!el) return;
+	el.innerHTML = '<div class="et-error">' + escapeHtml(message || '<%:Failed to load data%>') + '</div>';
+}
+
+function loadSection(tabName, options) {
+	options = options || {};
+	var withButton = !!options.withButton;
+
+	if (!sectionKeys[tabName]) return;
+
+	if (isRefreshing) {
+		pendingTab = tabName;
+		showTabLoading(tabName);
+		return;
+	}
+
 	isRefreshing = true;
-	var btn = document.getElementById('et_conninfo_refresh');
-	var btnText = btn.querySelector('span');
-	var originalText = btnText.textContent;
-	
-	btn.disabled = true;
-	btn.classList.add('loading');
-	btnText.textContent = '<%:Refreshing...%>';
-	
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', '<%=url("admin", "vpn", "easytier", "api_conninfo")%>', true);
-	xhr.onreadystatechange = function() {
-		if (xhr.readyState === 4) {
-			isRefreshing = false;
+	pendingTab = null;
+
+	var btn, btnText, originalText;
+	if (withButton) {
+		btn = document.getElementById('et_conninfo_refresh');
+		btnText = btn.querySelector('span');
+		originalText = btnText.textContent;
+		btn.disabled = true;
+		btn.classList.add('loading');
+		btnText.textContent = '<%:Refreshing...%>';
+	}
+
+	showTabLoading(tabName);
+
+	function finish() {
+		isRefreshing = false;
+		if (withButton && btn) {
 			btn.disabled = false;
 			btn.classList.remove('loading');
 			btnText.textContent = originalText;
-			
-			if (xhr.status === 200) {
-				try {
-					var data = JSON.parse(xhr.responseText);
-					updateConnInfo(data);
-				} catch (e) {
-					console.error('Failed to parse response:', e);
-				}
-			}
 		}
+		if (pendingTab) {
+			var nextTab = pendingTab;
+			pendingTab = null;
+			loadSection(nextTab);
+		}
+	}
+
+	var xhr = new XMLHttpRequest();
+	xhr.open('GET', conninfoUrl + '?section=' + encodeURIComponent(tabName), true);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState !== 4) return;
+		if (xhr.status === 200) {
+			try {
+				var data = JSON.parse(xhr.responseText);
+				if (data && data[sectionKeys[tabName]] !== undefined) {
+					updateSection(tabName, data);
+				} else {
+					showTabError(tabName);
+				}
+			} catch (e) {
+				console.error('Failed to parse response:', e);
+				showTabError(tabName);
+			}
+		} else {
+			showTabError(tabName);
+		}
+		finish();
 	};
 	xhr.onerror = function() {
-      		isRefreshing = false;
-      		btn.disabled = false;
-      		btn.classList.remove('loading');
-      		btnText.textContent = originalText;
-  	};
-  	xhr.onabort = function() {
-      		isRefreshing = false;
-      		btn.disabled = false;
-      		btn.classList.remove('loading');
-      		btnText.textContent = originalText;
-  	};
+		showTabError(tabName);
+		finish();
+	};
+	xhr.onabort = finish;
 	xhr.send();
 }
 
-function updateConnInfo(data) {
-	if (!data) return;
-	
-	var sections = [
-		{id: 'node', key: 'node'},
-		{id: 'peer', key: 'peer'},
-		{id: 'route', key: 'route'},
-		{id: 'connector', key: 'connector'},
-		{id: 'stun', key: 'stun'},
-		{id: 'peercenter', key: 'peer_center'},
-		{id: 'vpnportal', key: 'vpn_portal'},
-		{id: 'proxy', key: 'proxy'},
-		{id: 'acl', key: 'acl'},
-		{id: 'mappedlistener', key: 'mapped_listener'},
-		{id: 'stats', key: 'stats'},
-		{id: 'cmdline', key: 'cmdline'}
-	];
-	
-	sections.forEach(function(sec) {
-		var el = document.getElementById('tab_' + sec.id);
-		if (el && data[sec.key] !== undefined) {
-			el.innerHTML = parseTable(data[sec.key], sec.id);
-		}
-	});
+function refreshConnInfo() {
+	loadSection(currentTab, { withButton: true });
 }
 
 // 初始化TAB切换事件
@@ -1108,16 +1084,9 @@ document.addEventListener('DOMContentLoaded', function() {
 			return false;
 		});
 	});
-	
-	// 初始加载数据
-	refreshConnInfo();
-});
 
-// 自动刷新
-XHR.poll(5, '<%=url("admin", "vpn", "easytier", "api_conninfo")%>', null, function(x, data) {
-	if (!isRefreshing && data) {
-		updateConnInfo(data);
-	}
+	// 仅加载当前 Tab；需要更新时手动刷新或切换 Tab
+	loadSection(currentTab);
 });
 //]]>
 </script>

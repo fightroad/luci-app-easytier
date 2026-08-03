@@ -600,34 +600,53 @@ function act_conninfo()
 	local uci = require "luci.model.uci".cursor()
 	local easytierbin = uci:get_first("easytier", "easytier", "easytierbin") or "/usr/bin/easytier-core"
 	local clibin = easytierbin:gsub("easytier%-core$", "easytier-cli")
-	
+	local section = luci.http.formvalue("section") or "node"
+
+	-- Tab id / API key -> CLI 子命令（cmdline 特殊处理）
+	local section_cmds = {
+		node = { key = "node", cmd = "node" },
+		peer = { key = "peer", cmd = "peer" },
+		route = { key = "route", cmd = "route" },
+		connector = { key = "connector", cmd = "connector" },
+		stun = { key = "stun", cmd = "stun" },
+		peercenter = { key = "peer_center", cmd = "peer-center" },
+		vpnportal = { key = "vpn_portal", cmd = "vpn-portal" },
+		proxy = { key = "proxy", cmd = "proxy" },
+		acl = { key = "acl", cmd = "acl stats" },
+		mappedlistener = { key = "mapped_listener", cmd = "mapped-listener" },
+		stats = { key = "stats", cmd = "stats" },
+		cmdline = { key = "cmdline", cmd = nil }
+	}
+
+	local target = section_cmds[section]
+	if not target then
+		target = section_cmds.node
+		section = "node"
+	end
+
 	local process_status = luci.sys.exec("pgrep easytier-core")
-	
-	if process_status ~= "" then
-		-- 获取各类CLI信息
-		local function get_cli_output(cmd)
-			local handle = io.popen(clibin .. " " .. cmd .. " 2>&1")
-			if handle then
-				local result = handle:read("*all")
-				handle:close()
-				return result or ""
-			end
-			return ""
+	if process_status == "" then
+		local errMsg = i18n.translate("Error: Program not running! Please start the program and refresh")
+		e[target.key] = errMsg
+		luci.http.prepare_content("application/json")
+		luci.http.write_json(e)
+		return
+	end
+
+	local function get_cli_output(cmd)
+		local handle = io.popen(clibin .. " " .. cmd .. " 2>&1")
+		if handle then
+			local result = handle:read("*all")
+			handle:close()
+			return result or ""
 		end
-		
-		e.node = get_cli_output("node")
-		e.peer = get_cli_output("peer")
-		e.connector = get_cli_output("connector")
-		e.stun = get_cli_output("stun")
-		e.route = get_cli_output("route")
-		e.peer_center = get_cli_output("peer-center")
-		e.vpn_portal = get_cli_output("vpn-portal")
-		e.proxy = get_cli_output("proxy")
-		e.acl = get_cli_output("acl stats")
-		e.mapped_listener = get_cli_output("mapped-listener")
-		e.stats = get_cli_output("stats")
-		
-		-- 获取启动参数
+		return ""
+	end
+
+	if target.cmd then
+		e[target.key] = get_cli_output(target.cmd)
+	else
+		-- 启动参数
 		local cmdhandle = io.popen("cat /proc/$(pidof easytier-core)/cmdline 2>/dev/null | tr '\\0' ' '")
 		if cmdhandle then
 			e.cmdline = cmdhandle:read("*all") or ""
@@ -635,29 +654,14 @@ function act_conninfo()
 		else
 			e.cmdline = ""
 		end
-		
-		-- 检查是否使用配置文件启动
+
 		if e.cmdline:match("%-%-config%-file") or e.cmdline:match("%-c%s+/") then
 			e.config_file = safe_read_file("/etc/easytier/config.toml") or ""
 		else
 			e.config_file = ""
 		end
-	else
-		local errMsg = i18n.translate("Error: Program not running! Please start the program and refresh")
-		e.node = errMsg
-		e.peer = errMsg
-		e.connector = errMsg
-		e.stun = errMsg
-		e.route = errMsg
-		e.peer_center = errMsg
-		e.vpn_portal = errMsg
-		e.proxy = errMsg
-		e.acl = errMsg
-		e.mapped_listener = errMsg
-		e.stats = errMsg
-		e.cmdline = errMsg
 	end
-	
+
 	luci.http.prepare_content("application/json")
 	luci.http.write_json(e)
 end

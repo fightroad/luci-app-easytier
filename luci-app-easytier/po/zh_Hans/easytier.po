@@ -1657,6 +1657,9 @@ msgstr "配置文件内容"
 msgid "No data available"
 msgstr "暂无数据"
 
+msgid "Failed to load data"
+msgstr "加载失败"
+
 msgid "Peer Center service not available. This feature requires multiple nodes in the network."
 msgstr "节点中心服务不可用，此功能要求网络中包含多个节点。"
 
