@@ -40,7 +40,6 @@ while true; do
         fi
     else
         echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 通断检测：程序已关闭，退出检测 " >>/tmp/easytier.log
-        /etc/init.d/easytier restart
         break
     fi
     sleep $((time))
