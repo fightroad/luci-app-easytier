@@ -737,6 +737,9 @@ msgstr "连接web控制台时识别此设备的唯一标识，用于下发配置
 msgid "Upload Program"
 msgstr "上传程序"
 
+msgid "Program Management"
+msgstr "程序管理"
+
 #: applications/luci-app-easytier/luasrc/view/easytier/other_upload.htm:2
 msgid "Upload Program:"
 msgstr "上传程序："
@@ -1816,6 +1819,15 @@ msgstr "日志"
 
 msgid "Online Download"
 msgstr "在线下载"
+
+msgid "Manual binary upload is disabled. Please use Online Download above to install or upgrade EasyTier."
+msgstr "已禁用手动上传程序，请使用上方的「在线下载」安装或升级 EasyTier。"
+
+msgid "Manual upload is disabled. Please use online download."
+msgstr "已禁用手动上传，请使用在线下载。"
+
+msgid "If the device has insufficient storage space, the download may fail and existing programs may be deleted. Please ensure adequate free space before downloading."
+msgstr "如果设备可用空间不足，下载可能失败并导致现有程序被清除，请确保有足够可用空间后再下载。"
 
 msgid "Online Download EasyTier"
 msgstr "在线下载EasyTier程序"

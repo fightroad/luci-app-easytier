@@ -469,9 +469,16 @@ local translate = i18n.translate
 			<button class="log-tab active" data-log="core" onclick="switchLog('core')">
 				<%=translate("core log")%>
 			</button>
+			<%
+				local uci = require "luci.model.uci".cursor()
+				local webbin = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web"
+				local has_web = nixio.fs.access(webbin, "x")
+				if has_web then
+			%>
 			<button class="log-tab" data-log="web" onclick="switchLog('web')">
 				<%=translate("web log")%>
 			</button>
+			<% end %>
 			<a class="log-wiki-link" href="https://deepwiki.com/EasyTier/EasyTier" target="_blank">
 				<img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
 			</a>

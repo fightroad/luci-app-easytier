@@ -79,6 +79,8 @@ check_bin() {
 	# 优先使用 UCI 配置的代理列表（list 类型），否则使用默认值
 	local proxys=""
 	local proxy_list=$(uci -q get easytier.@easytier[0].github_proxys)
+	local webbin="$(uci -q get easytier.@easytier[0].webbin)"
+	[ -z "$webbin" ] && webbin="/usr/bin/easytier-web"
 	
 	# 判断是否有多个代理
 	if [ ! -z "$proxy_list" ]; then
@@ -132,7 +134,7 @@ check_bin() {
                     			echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : ${proxy}https://github.com/EasyTier/EasyTier/releases/download/${tag}/easytier-linux-${cpucore}-${tag}.zip 下载不完整，请手动下载上传程序" >>/tmp/easytier.log
                  		fi
 	         	fi
-	         	if [ "$(uci -q get easytier.@easytier[0].web_enabled)" = "1" ] ; then
+	         	if [ "$(uci -q get easytier.@easytier[0].web_enabled)" = "1" ] && [ -f "$webbin" ] ; then
 	         		mv -f /tmp/easytier-web-embed ${webbin} || true
 	         		chmod +x "$webbin"
 	         		if [ "$($webbin -h 2>&1 | wc -l)" -gt 3 ] ; then
@@ -141,8 +143,14 @@ check_bin() {
 					echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : ${proxy}https://github.com/EasyTier/EasyTier/releases/download/${tag}/easytier-linux-${cpucore}-${tag}.zip 下载不完整，请手动下载上传程序" >>/tmp/easytierweb.log
                  		fi
 	         	fi
-                 	
-                	rm -rf /tmp/easytier.zip 
+			# 清理未安装的临时文件；core/cli/web 若安装目标就在 /tmp 则不能删
+			rm -f /tmp/easytier.zip
+			[ "$webbin" = "/tmp/easytier-web" ] || rm -f /tmp/easytier-web
+			[ "$webbin" = "/tmp/easytier-web-embed" ] || rm -f /tmp/easytier-web-embed
+			case "$path" in
+				/tmp|/tmp/) ;;
+				*) rm -f /tmp/easytier-core /tmp/easytier-cli ;;
+			esac
 			break
  		 else
 			echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : ${proxy}https://github.com/EasyTier/EasyTier/releases/download/${tag}/easytier-linux-${cpucore}-${tag}.zip 下载失败，请手动下载上传程序" >>/tmp/easytier.log
@@ -658,20 +666,17 @@ EOF
 start_web() {
 	webbin="$(uci -q get easytier.@easytier[0].webbin)"
 	[ -z "$webbin" ] && webbin="/usr/bin/easytier-web" && uci -q set easytier.@easytier[0].webbin=/usr/bin/easytier-web
-	path=$(dirname "$webbin")
-	if [ -f /tmp/easytier-web-embed ] ; then
-		echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 找到上传的easytier-web程序，替换${webbin} " >>/tmp/easytierweb.log
-		mv -f /tmp/easytier-web-embed "$webbin"
+	# 无本地 webbin（如 noweb）时不自动在线下载/从 /tmp 安装 web
+	if [ ! -f "$webbin" ] || [ ! -x "$webbin" ] ; then
+		echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 未找到可执行的 ${webbin}，跳过 Web 启动（不自动下载）" >>/tmp/easytierweb.log
+		uci -q set easytier.@easytier[0].web_enabled='0'
+		uci commit easytier
+		return 1
 	fi
-	if [ ! -f "$webbin" ] || [ "$(($($webbin -h 2>&1 | wc -l)))" -lt 3 ] ; then
-		echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : $webbin 不存在或程序不完整，开始在线下载..." >>/tmp/easytierweb.log
-        	check_bin
-	fi
-	if [ -f "$webbin" ] ; then
-		[ ! -x "$webbin" ] && chmod +x "$webbin"
-	fi
-	if [ ! -f "$webbin" ] || [ "$($webbin -h 2>&1 | wc -l)" -lt 3 ] ; then
-		echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 未找到${webbin}程序或程序不适配当前架构，请上传安装后再启动！ " >>/tmp/easytierweb.log
+	if [ "$($webbin -h 2>&1 | wc -l)" -lt 3 ] ; then
+		echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : ${webbin} 程序不完整或不适配，跳过 Web 启动（不自动下载）" >>/tmp/easytierweb.log
+		uci -q set easytier.@easytier[0].web_enabled='0'
+		uci commit easytier
 		return 1
 	fi
 	echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 开始启动${webbin} " >>/tmp/easytierweb.log

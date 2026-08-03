@@ -335,6 +335,11 @@ local translate = i18n.translate
 </style>
 
 <div class="upload-container">
+	<%
+		local uci = require "luci.model.uci".cursor()
+		local webbin_path = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web"
+		local has_web = nixio.fs.access(webbin_path, "x")
+	%>
 	<div class="upload-info">
 		<div class="upload-info-title"><%=translate("Configuration")%></div>
 		<div style="margin-bottom:16px;">
@@ -345,6 +350,7 @@ local translate = i18n.translate
 			<div id="easytierbin_space" style="font-size:11px;color:var(--text-secondary);margin-top:4px;"></div>
 			<div id="easytierbin_size" style="font-size:11px;color:var(--text-secondary);margin-top:2px;"></div>
 		</div>
+		<% if has_web then %>
 		<div style="margin-bottom:16px;">
 			<label style="display:block;font-size:13px;color:var(--text-secondary);margin-bottom:4px;">
 				<%=translate("easytier-web Binary Path")%>
@@ -353,6 +359,7 @@ local translate = i18n.translate
 			<div id="webbin_space" style="font-size:11px;color:var(--text-secondary);margin-top:4px;"></div>
 			<div id="webbin_size" style="font-size:11px;color:var(--text-secondary);margin-top:2px;"></div>
 		</div>
+		<% end %>
 		<div style="margin-bottom:16px;">
 			<label style="display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:8px;">
 				<%=translate("GitHub Proxy URLs")%>
@@ -398,30 +405,6 @@ local translate = i18n.translate
 		</button>
 	</div>
 	
-	<div class="upload-card" id="upload_area">
-		<div class="upload-icon">📦</div>
-		<div class="upload-title"><%=translate("Upload EasyTier Binary")%></div>
-		<div class="upload-desc"><%=translate("Drag *.tar.gz / *.zip / easytier binaries here or click to select file")%></div>
-		<input type="file" id="file_input" style="display:none" accept="*">
-		<button class="upload-btn" onclick="event.stopPropagation(); document.getElementById('file_input').click();">
-			<%=translate("Select File")%>
-		</button>
-	</div>
-	
-	<div class="upload-progress" id="upload_progress">
-		<div class="progress-bar">
-			<div class="progress-fill" id="progress_fill"></div>
-		</div>
-		<div class="progress-text" id="progress_text"><%=translate("Uploading...")%> 0%</div>
-	</div>
-	
-	<div class="upload-progress" id="processing_progress" style="display:none;">
-		<div class="progress-text" style="margin-top:0;">
-			<span class="spinner"></span>
-			<%=translate("Processing uploaded file, please wait...")%>
-		</div>
-	</div>
-	
 	<div class="alert" id="alert_box"></div>
 	
 	<!-- 在线下载模态窗口 -->
@@ -458,28 +441,16 @@ local translate = i18n.translate
 	</div>
 	
 	<div class="upload-info">
-		<div class="upload-info-title"><%=translate("Supported Files")%></div>
-		<ul class="upload-info-list">
-			<li><strong>easytier-core</strong> - <%=translate("Core service binary")%></li>
-			<li><strong>easytier-cli</strong> - <%=translate("Command line tool")%></li>
-			<li><strong>easytier-web-embed</strong> - <%=translate("Embedded web console")%> <span style="color:var(--success);">(<%=translate("Recommended")%>)</span></li>
-			<li><strong>easytier-web</strong> - <%=translate("Web console binary")%> <span style="color:var(--error);">(<%=translate("Will be ignored, use embed version instead")%>)</span></li>
-			<li><strong>*.zip / *.tar.gz</strong> - <%=translate("Compressed archive containing binaries")%></li>
-		</ul>
-		<div style="margin-top:12px;padding:12px;background:rgba(33,150,243,0.1);border-left:3px solid var(--info);border-radius:4px;">
-			<div style="font-size:12px;color:var(--text-primary);margin-bottom:4px;">
-				<strong><%=translate("Note")%>:</strong>
-			</div>
-			<div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-				<%=translate("Files will be uploaded to the paths specified above")%>. <%=translate("EasyTier console uses easytier-web-embed. The easytier-web binary will be rejected during upload validation.")%>
-			</div>
+		<div class="upload-info-title"><%=translate("Online Download")%></div>
+		<div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
+			<%=translate("Manual binary upload is disabled. Please use Online Download above to install or upgrade EasyTier.")%>
 		</div>
 		<div style="margin-top:12px;padding:12px;background:rgba(244,67,54,0.1);border-left:3px solid var(--error);border-radius:4px;">
 			<div style="font-size:12px;color:var(--text-primary);margin-bottom:4px;">
 				<strong><%=translate("Warning")%>:</strong>
 			</div>
 			<div style="font-size:12px;color:var(--text-secondary);line-height:1.6;">
-				<%=translate("If the device has insufficient storage space, the upload may fail and existing programs may be deleted. Please ensure adequate free space before uploading.")%>
+				<%=translate("If the device has insufficient storage space, the download may fail and existing programs may be deleted. Please ensure adequate free space before downloading.")%>
 			</div>
 		</div>
 		<div style="margin-top:12px;font-size:12px;color:var(--text-secondary);">
@@ -490,9 +461,9 @@ local translate = i18n.translate
 
 <div class="modal" id="restart_modal">
 	<div class="modal-content">
-		<div class="modal-title"><%=translate("Upload Successful")%></div>
+		<div class="modal-title"><%=translate("Download Successful")%></div>
 		<div class="modal-message" id="modal_message">
-			<%=translate("Binary uploaded successfully. Restart the service to apply changes?")%>
+			<%=translate("Download completed. Restart service now?")%>
 		</div>
 		<div class="modal-buttons">
 			<button class="modal-btn modal-btn-secondary" onclick="closeModal()"><%=translate("Later")%></button>
@@ -751,7 +722,10 @@ function loadConfig() {
 			try {
 				var config = JSON.parse(xhr.responseText);
 				document.getElementById('easytierbin').value = config.easytierbin || '/usr/bin/easytier-core';
-				document.getElementById('webbin').value = config.webbin || '/usr/bin/easytier-web';
+				var webbinInput = document.getElementById('webbin');
+				if (webbinInput) {
+					webbinInput.value = config.webbin || '/usr/bin/easytier-web';
+				}
 				
 				// 确保是数组
 				var proxys = config.github_proxys || [];
@@ -769,7 +743,7 @@ function loadConfig() {
 				};
 				
 				checkDiskSpace('easytierbin');
-				checkDiskSpace('webbin');
+				if (document.getElementById('webbin')) checkDiskSpace('webbin');
 			} catch (e) {
 				proxyList = [];
 				renderProxyList();
@@ -783,6 +757,7 @@ function checkDiskSpace(inputId) {
 	var input = document.getElementById(inputId);
 	var spaceDiv = document.getElementById(inputId + '_space');
 	var sizeDiv = document.getElementById(inputId + '_size');
+	if (!input || !spaceDiv || !sizeDiv) return;
 	var path = input.value || input.placeholder;
 	
 	if (!path) {
@@ -839,9 +814,10 @@ function checkDiskSpace(inputId) {
 }
 
 function getCurrentConfig() {
+	var webbinInput = document.getElementById('webbin');
 	return {
 		easytierbin: document.getElementById('easytierbin').value || '/usr/bin/easytier-core',
-		webbin: document.getElementById('webbin').value || '/usr/bin/easytier-web',
+		webbin: (webbinInput && webbinInput.value) || originalConfig.webbin || '/usr/bin/easytier-web',
 		github_proxys: JSON.stringify(proxyList),
 		fallback_version: versionManager.getCurrentVersion() || 'v2.6.4'
 	};
@@ -864,9 +840,10 @@ function saveConfig() {
 		return;
 	}
 	
+	var webbinInput = document.getElementById('webbin');
 	var data = {
 		easytierbin: document.getElementById('easytierbin').value || '/usr/bin/easytier-core',
-		webbin: document.getElementById('webbin').value || '/usr/bin/easytier-web',
+		webbin: (webbinInput && webbinInput.value) || originalConfig.webbin || '/usr/bin/easytier-web',
 		github_proxys: proxyList,
 		fallback_version: versionManager.getCurrentVersion() || 'v2.6.4'
 	};
@@ -898,7 +875,7 @@ function saveConfig() {
 }
 
 var proxyList = [];
-var uploadArea, fileInput, progressDiv, progressFill, progressText, alertBox, restartModal;
+var alertBox, restartModal;
 
 function renderProxyList() {
 	var container = document.getElementById('proxy_list');
@@ -953,140 +930,9 @@ function escapeHtml(text) {
 }
 
 window.onload = function() {
-	uploadArea = document.getElementById('upload_area');
-	fileInput = document.getElementById('file_input');
-	progressDiv = document.getElementById('upload_progress');
-	progressFill = document.getElementById('progress_fill');
-	progressText = document.getElementById('progress_text');
 	alertBox = document.getElementById('alert_box');
 	restartModal = document.getElementById('restart_modal');
-	
-	var validNames = ['easytier-core', 'easytier-cli', 'easytier-web', 'easytier-web-embed'];
-
-	// 拖放事件
-	uploadArea.addEventListener('dragover', function(e) {
-		e.preventDefault();
-		uploadArea.classList.add('drag-over');
-	});
-
-	uploadArea.addEventListener('dragleave', function(e) {
-		e.preventDefault();
-		uploadArea.classList.remove('drag-over');
-	});
-
-	uploadArea.addEventListener('drop', function(e) {
-		e.preventDefault();
-		uploadArea.classList.remove('drag-over');
-		var files = e.dataTransfer.files;
-		if (files.length > 0) {
-			handleFile(files[0]);
-		}
-	});
-
-	// 文件选择
-	fileInput.addEventListener('change', function(e) {
-		if (e.target.files.length > 0) {
-			handleFile(e.target.files[0]);
-		}
-	});
-	
-	// 点击上传区域
-	uploadArea.addEventListener('click', function() {
-		fileInput.click();
-	});
 };
-
-function handleFile(file) {
-	var validNames = ['easytier-core', 'easytier-cli', 'easytier-web', 'easytier-web-embed'];
-	var filename = file.name;
-	
-	// 检查是否是压缩文件
-	var isArchive = filename.match(/\.(zip|tar\.gz|tgz|tar)$/i);
-	
-	// 验证文件名（压缩文件直接通过，二进制文件需要验证）
-	if (!isArchive) {
-		var isValid = false;
-		for (var i = 0; i < validNames.length; i++) {
-			if (filename === validNames[i]) {
-				isValid = true;
-				break;
-			}
-		}
-		
-		if (!isValid) {
-			showAlert('error', '<%=translate("Invalid file name")%>. <%=translate("Only easytier binaries or compressed archives (.zip, .tar.gz, .tar) are allowed")%>');
-			return;
-		}
-	}
-	
-	uploadFile(file);
-}
-
-function uploadFile(file) {
-	hideAlert();
-	progressDiv.style.display = 'block';
-	progressFill.style.width = '0%';
-	progressText.textContent = '<%=translate("Uploading...")%> 0%';
-	
-	var formData = new FormData();
-	formData.append('filename', file.name);
-	formData.append('file', file);
-	
-	var xhr = new XMLHttpRequest();
-	xhr.open('POST', '<%=url("admin", "vpn", "easytier", "upload_binary")%>', true);
-	
-	xhr.upload.onprogress = function(event) {
-		if (event.lengthComputable) {
-			var percent = Math.round((event.loaded / event.total) * 100);
-			progressFill.style.width = percent + '%';
-			progressText.textContent = '<%=translate("Uploading...")%> ' + percent + '%';
-		}
-	};
-	
-	xhr.onload = function() {
-		var uploadComplete = progressFill.style.width === '100%';
-		
-		if (uploadComplete) {
-			progressDiv.style.display = 'none';
-			document.getElementById('processing_progress').style.display = 'block';
-		}
-		
-		if (xhr.status === 200) {
-			try {
-				var response = JSON.parse(xhr.responseText);
-				if (response.success) {
-					setTimeout(function() {
-						progressDiv.style.display = 'none';
-						document.getElementById('processing_progress').style.display = 'none';
-						showAlert('success', response.message);
-						document.getElementById('modal_message').textContent = response.message + ' <%=translate("Restart the service to apply changes?")%>';
-						restartModal.classList.add('show');
-					}, 100);
-				} else {
-					progressDiv.style.display = 'none';
-					document.getElementById('processing_progress').style.display = 'none';
-					showAlert('error', response.message);
-				}
-			} catch (e) {
-				progressDiv.style.display = 'none';
-				document.getElementById('processing_progress').style.display = 'none';
-				showAlert('error', '<%=translate("Upload failed")%>: ' + e.message);
-			}
-		} else {
-			progressDiv.style.display = 'none';
-			document.getElementById('processing_progress').style.display = 'none';
-			showAlert('error', '<%=translate("Upload failed")%>: HTTP ' + xhr.status);
-		}
-	};
-	
-	xhr.onerror = function() {
-		progressDiv.style.display = 'none';
-		document.getElementById('processing_progress').style.display = 'none';
-		showAlert('error', '<%=translate("Network error")%>');
-	};
-	
-	xhr.send(formData);
-}
 
 function showAlert(type, message) {
 	var alertBox = document.getElementById('alert_box');

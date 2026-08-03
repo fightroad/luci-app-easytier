@@ -466,7 +466,7 @@ input:checked + .slider:before {
 			</label>
 		</div>
 	</div>
-	<div class="et-action-row">
+	<div class="et-action-row" id="webActionRow" style="display:none;">
 		<div class="et-action-label">EasyTier Web</div>
 		<div class="et-action-controls">
 			<label class="switch">
@@ -679,14 +679,16 @@ function updateStatus(data) {
 		latest: data.etnewtag
 	}, data.crunning);
 	
-	html += renderService('EasyTier Web', {
-		cpu: data.etwebcpu,
-		mem: data.etwebram,
-		uptime: data.etwebsta,
-		version: data.etwebtag,
-		latest: data.etnewtag,
-		port: data.port
-	}, data.wrunning);
+	if (data.has_web) {
+		html += renderService('EasyTier Web', {
+			cpu: data.etwebcpu,
+			mem: data.etwebram,
+			uptime: data.etwebsta,
+			version: data.etwebtag,
+			latest: data.etnewtag,
+			port: data.port
+		}, data.wrunning);
+	}
 	
 	container.innerHTML = html;
 }
@@ -710,7 +712,8 @@ function showToast(message) {
 
 function setControlsDisabled(disabled) {
 	document.getElementById('coreSwitch').disabled = disabled;
-	document.getElementById('webSwitch').disabled = disabled;
+	var webSwitch = document.getElementById('webSwitch');
+	if (webSwitch) webSwitch.disabled = disabled;
 	document.getElementById('restartBtn').disabled = disabled;
 }
 
@@ -787,8 +790,9 @@ function toggleCore(enabled) {
 }
 
 function toggleWeb(enabled) {
+	var webSwitch = document.getElementById('webSwitch');
 	if (firstLoad || actionCooldown) {
-		document.getElementById('webSwitch').checked = !enabled;
+		if (webSwitch) webSwitch.checked = !enabled;
 		return;
 	}
 	
@@ -820,13 +824,18 @@ document.getElementById('coreSwitch').addEventListener('change', function() {
 	toggleCore(this.checked);
 });
 
-document.getElementById('webSwitch').addEventListener('change', function() {
-	if (firstLoad) {
-		this.checked = !this.checked;
-		return;
+(function() {
+	var webSwitch = document.getElementById('webSwitch');
+	if (webSwitch) {
+		webSwitch.addEventListener('change', function() {
+			if (firstLoad) {
+				this.checked = !this.checked;
+				return;
+			}
+			toggleWeb(this.checked);
+		});
 	}
-	toggleWeb(this.checked);
-});
+})();
 
 var tunTrafficData = {
 	labels: [],
@@ -1080,12 +1089,19 @@ XHR.poll(3, '<%=url("admin", "vpn", "easytier", "api_status")%>', null, function
 	
 	updateTunInterface(data.crunning, data.no_tun, data.dev_name);
 	
+	var webActionRow = document.getElementById('webActionRow');
+	if (webActionRow) {
+		webActionRow.style.display = data.has_web ? '' : 'none';
+	}
+	
 	// 使用配置值初始化开关状态
 	var coreSwitch = document.getElementById('coreSwitch');
 	var webSwitch = document.getElementById('webSwitch');
 	
 	coreSwitch.checked = data.cenabled;
-	webSwitch.checked = data.wenabled;
+	if (webSwitch && data.has_web) {
+		webSwitch.checked = data.wenabled;
+	}
 	
 	// 首次加载完成后启用控件
 	if (firstLoad && !actionCooldown) {

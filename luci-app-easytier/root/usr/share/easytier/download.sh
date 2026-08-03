@@ -105,9 +105,20 @@ check_and_download() {
 			if [ "$(uci -q get easytier.@easytier[0].web_enabled)" = "1" ]; then
 				local webbin=$(uci -q get easytier.@easytier[0].webbin)
 				[ -z "$webbin" ] && webbin="/usr/bin/easytier-web"
-				mv -f /tmp/easytier-web-embed "$webbin" 2>/dev/null || true
-				chmod +x "$webbin" 2>/dev/null
+				# 仅当本地已有 webbin 时才更新，避免 noweb 被自动装上 web
+				if [ -f "$webbin" ]; then
+					mv -f /tmp/easytier-web-embed "$webbin" 2>/dev/null || true
+					chmod +x "$webbin" 2>/dev/null
+				fi
 			fi
+
+			# 清理未安装的临时文件；core/cli/web 若安装目标就在 /tmp 则不能删
+			[ "$webbin" = "/tmp/easytier-web" ] || rm -f /tmp/easytier-web
+			[ "$webbin" = "/tmp/easytier-web-embed" ] || rm -f /tmp/easytier-web-embed
+			case "$path" in
+				/tmp|/tmp/) ;;
+				*) rm -f /tmp/easytier-core /tmp/easytier-cli ;;
+			esac
 			
 			return 0
 		fi

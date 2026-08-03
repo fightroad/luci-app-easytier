@@ -42,6 +42,13 @@ local function calc_uptime(start_time_file)
     return result
 end
 
+-- 检测本地 easytier-web 是否可用（noweb 包无此程序）
+local function has_easytier_web()
+	local uci = require "luci.model.uci".cursor()
+	local webbin = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web"
+	return nixio.fs.access(webbin, "x")
+end
+
 function index()
 	if not nixio.fs.access("/etc/config/easytier") then
 		return
@@ -51,9 +58,11 @@ function index()
 	entry({"admin", "vpn", "easytier"}, firstchild(),_("EasyTier"), 46).dependent = true
 	entry({"admin", "vpn", "easytier", "status"}, cbi("easytier_status"),_("Status"), 1).leaf = true
 	entry({"admin", "vpn", "easytier", "config"}, cbi("easytier"),_("EasyTier Core"), 2).leaf = true
-	entry({"admin", "vpn", "easytier", "webconsole"}, template("easytier/easytier_web"),_("EasyTier Web"), 3).leaf = true
+	if has_easytier_web() then
+		entry({"admin", "vpn", "easytier", "webconsole"}, template("easytier/easytier_web"),_("EasyTier Web"), 3).leaf = true
+	end
 	entry({"admin", "vpn", "easytier", "log"}, template("easytier/easytier_log"),_("Logs"), 4).leaf = true
-	entry({"admin", "vpn", "easytier", "upload"}, template("easytier/easytier_upload"),_("Upload Program"), 5).leaf = true
+	entry({"admin", "vpn", "easytier", "upload"}, template("easytier/easytier_upload"),_("Program Management"), 5).leaf = true
 	entry({"admin", "vpn", "easytier", "upload_binary"}, call("upload_binary")).leaf = true
 	entry({"admin", "vpn", "easytier", "get_upload_config"}, call("get_upload_config")).leaf = true
 	entry({"admin", "vpn", "easytier", "save_upload_config"}, call("save_upload_config")).leaf = true
@@ -85,15 +94,41 @@ function act_status()
 	local sys  = require "luci.sys"
 	local uci  = require "luci.model.uci".cursor()
 	local port = tonumber(uci:get_first("easytier", "easytier", "web_html_port"))
+	e.has_web = has_easytier_web() and true or false
 	e.crunning = luci.sys.call("pgrep easytier-core >/dev/null") == 0
-	e.wrunning = luci.sys.call("pgrep easytier-web >/dev/null") == 0
-	e.port = (port or 0)
 	e.cenabled = uci:get_first("easytier", "easytier", "enabled") == "1"
-	e.wenabled = uci:get_first("easytier", "easytier", "web_enabled") == "1"
+	e.port = (port or 0)
+
+	if e.has_web then
+		e.wrunning = luci.sys.call("pgrep easytier-web >/dev/null") == 0
+		e.wenabled = uci:get_first("easytier", "easytier", "web_enabled") == "1"
+		e.etwebsta = calc_uptime("/tmp/easytierweb_time")
+
+		local command4 = io.popen('test ! -z "`pidof easytier-web`" && (top -b -n1 | grep -E "$(pidof easytier-web)" 2>/dev/null | grep -v grep | awk \'{for (i=1;i<=NF;i++) {if ($i ~ /easytier-web/) break; else cpu=i}} END {print $cpu}\')')
+		e.etwebcpu = command4:read("*all")
+		command4:close()
+
+		local command5 = io.popen("test ! -z `pidof easytier-web` && (cat /proc/$(pidof easytier-web | awk '{print $NF}')/status | grep -w VmRSS | awk '{printf \"%.2f MB\", $2/1024}')")
+		e.etwebram = command5:read("*all")
+		command5:close()
+
+		local cached_webtag = safe_read_file("/tmp/easytierweb.tag")
+		if cached_webtag and cached_webtag ~= "" then
+			e.etwebtag = cached_webtag:gsub("[\r\n]+", "")
+		else
+			local easytierwebbin = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web"
+			e.etwebtag = safe_exec(easytierwebbin .. " -V 2>/dev/null | sed 's/^[^0-9]*//'")
+			if e.etwebtag == "" or e.etwebtag == nil then e.etwebtag = "unknown" end
+			local f = io.open("/tmp/easytierweb.tag", "w")
+			if f then f:write(e.etwebtag); f:close() end
+		end
+	else
+		e.wrunning = false
+		e.wenabled = false
+	end
 	
 	-- 使用 Lua 原生计算运行时长
 	e.etsta = calc_uptime("/tmp/easytier_time")
-	e.etwebsta = calc_uptime("/tmp/easytierweb_time")
 	
 	-- 获取 CPU 和内存使用率（使用原始命令）
 	local command2 = io.popen('test ! -z "`pidof easytier-core`" && (top -b -n1 | grep -E "$(pidof easytier-core)" 2>/dev/null | grep -v grep | awk \'{for (i=1;i<=NF;i++) {if ($i ~ /easytier-core/) break; else cpu=i}} END {print $cpu}\')')
@@ -103,14 +138,6 @@ function act_status()
 	local command3 = io.popen("test ! -z `pidof easytier-core` && (cat /proc/$(pidof easytier-core | awk '{print $NF}')/status | grep -w VmRSS | awk '{printf \"%.2f MB\", $2/1024}')")
 	e.etram = command3:read("*all")
 	command3:close()
-	
-	local command4 = io.popen('test ! -z "`pidof easytier-web`" && (top -b -n1 | grep -E "$(pidof easytier-web)" 2>/dev/null | grep -v grep | awk \'{for (i=1;i<=NF;i++) {if ($i ~ /easytier-web/) break; else cpu=i}} END {print $cpu}\')')
-	e.etwebcpu = command4:read("*all")
-	command4:close()
-	
-	local command5 = io.popen("test ! -z `pidof easytier-web` && (cat /proc/$(pidof easytier-web | awk '{print $NF}')/status | grep -w VmRSS | awk '{printf \"%.2f MB\", $2/1024}')")
-	e.etwebram = command5:read("*all")
-	command5:close()
 	
 	-- 获取版本信息
 	local cached_newtag = safe_read_file("/tmp/easytiernew.tag")
@@ -133,17 +160,6 @@ function act_status()
 		if e.ettag == "" or e.ettag == nil then e.ettag = "unknown" end
 		local f = io.open("/tmp/easytier.tag", "w")
 		if f then f:write(e.ettag); f:close() end
-	end
-	
-	local cached_webtag = safe_read_file("/tmp/easytierweb.tag")
-	if cached_webtag and cached_webtag ~= "" then
-		e.etwebtag = cached_webtag:gsub("[\r\n]+", "")
-	else
-		local easytierwebbin = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web"
-		e.etwebtag = safe_exec(easytierwebbin .. " -V 2>/dev/null | sed 's/^[^0-9]*//'")
-		if e.etwebtag == "" or e.etwebtag == nil then e.etwebtag = "unknown" end
-		local f = io.open("/tmp/easytierweb.tag", "w")
-		if f then f:write(e.etwebtag); f:close() end
 	end
 	
 	e.no_tun = uci:get_first("easytier", "easytier", "no_tun") == "1"
@@ -393,181 +409,15 @@ local function test_binary(path)
 	return line_count >= 3 and output:lower():match("easytier")
 end
 
-local function cleanup_files(...)
-	for _, file in ipairs({...}) do
-		nixio.fs.remove(file)
-	end
-end
-
 function upload_binary()
 	local http = require "luci.http"
-	local uci = require "luci.model.uci".cursor()
-	local nixio = require "nixio"
-	local translate = i18n.translate
-	
-	local fp
-	local filename = ""
-	local tmp_file = ""
-	
-	http.setfilehandler(
-		function(meta, chunk, eof)
-			if meta and meta.file then
-				filename = meta.file
-				tmp_file = "/tmp/upload_" .. filename
-			end
-			if not fp and tmp_file ~= "" then
-				fp = io.open(tmp_file, "w")
-			end
-			if chunk and fp then
-				fp:write(chunk)
-			end
-			if eof and fp then
-				fp:close()
-			end
-		end
-	)
-	
+	-- Discard any uploaded payload to avoid filling /tmp
+	http.setfilehandler(function() end)
 	http.prepare_content("application/json")
-	
-	if not http.formvalue("file") or tmp_file == "" then
-		http.write_json({success = false, message = translate("No file uploaded")})
-		return
-	end
-	
-	local is_archive = filename:match("%.zip$") or filename:match("%.tar%.gz$") or filename:match("%.tgz$") or filename:match("%.tar$")
-	
-	if is_archive then
-		local extract_dir = "/tmp/easytier_extract"
-		os.execute("rm -rf " .. extract_dir .. " && mkdir -p " .. extract_dir)
-		
-		if filename:match("%.zip$") then
-			if os.execute("which unzip >/dev/null 2>&1") ~= 0 then
-				cleanup_files(tmp_file)
-				http.write_json({success = false, message = translate("System lacks unzip package, cannot extract zip archive")})
-				return
-			end
-			os.execute("unzip -o -q " .. tmp_file .. " -d " .. extract_dir)
-		else
-			os.execute("tar -xzf " .. tmp_file .. " -C " .. extract_dir .. " 2>/dev/null || tar -xf " .. tmp_file .. " -C " .. extract_dir)
-		end
-		
-		os.execute("find " .. extract_dir .. "/easytier-linux-* -maxdepth 1 -type f -exec mv {} " .. extract_dir .. "/ \\; 2>/dev/null")
-		cleanup_files(tmp_file)
-		
-		if nixio.fs.access(extract_dir .. "/easytier-web") then
-			nixio.fs.remove(extract_dir .. "/easytier-web")
-		end
-		
-		local binaries = {"easytier-core", "easytier-cli", "easytier-web-embed"}
-		local valid_bins = {}
-		
-		for _, bin in ipairs(binaries) do
-			local src = extract_dir .. "/" .. bin
-			if nixio.fs.access(src) then
-				nixio.fs.chmod(src, "755")
-				if test_binary(src) then
-					table.insert(valid_bins, {name = bin, path = src})
-				else
-					cleanup_files(src)
-				end
-			end
-		end
-		
-		if #valid_bins == 0 then
-			os.execute("rm -rf " .. extract_dir)
-			http.write_json({success = false, message = translate("Not a valid EasyTier program or architecture mismatch")})
-			return
-		end
-		
-		local core_path = uci:get_first("easytier", "easytier", "easytierbin") or "/usr/bin/easytier-core"
-		local web_path = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web"
-		
-		for _, bin in ipairs(valid_bins) do
-			local final_path
-			if bin.name == "easytier-web-embed" then
-				final_path = web_path
-			elseif bin.name == "easytier-core" then
-				final_path = core_path
-			elseif bin.name == "easytier-cli" then
-				local core_dir = core_path:match("(.*/)")
-				final_path = (core_dir or "/usr/bin/") .. "easytier-cli"
-			end
-			
-			os.execute("rm -f " .. final_path)
-			
-			if os.execute("mv " .. bin.path .. " " .. final_path) ~= 0 then
-				os.execute("rm -rf " .. extract_dir)
-				http.write_json({success = false, message = translate("Failed to move file. Insufficient space or permission denied")})
-				return
-			end
-			
-			os.execute("chmod 755 " .. final_path)
-			if not test_binary(final_path) then
-				os.execute("rm -f " .. final_path)
-				os.execute("rm -rf " .. extract_dir)
-				http.write_json({success = false, message = translate("Not a valid EasyTier program or architecture mismatch")})
-				return
-			end
-		end
-		
-		os.execute("rm -rf " .. extract_dir)
-		nixio.fs.remove("/tmp/easytier.tag")
-		nixio.fs.remove("/tmp/easytierweb.tag")
-		http.write_json({success = true, message = translate("Successfully installed") .. " " .. #valid_bins .. " " .. translate("binary file(s)")})
-	else
-		local valid_names = {["easytier-core"] = true, ["easytier-cli"] = true, ["easytier-web-embed"] = true, ["easytier-web"] = true}
-		
-		if not valid_names[filename] then
-			cleanup_files(tmp_file)
-			http.write_json({success = false, message = translate("Not a valid EasyTier program")})
-			return
-		end
-		
-		if filename == "easytier-web" then
-			cleanup_files(tmp_file)
-			http.write_json({success = false, message = translate("easytier-web is not used by this plugin, please upload easytier-web-embed")})
-			return
-		end
-		
-		nixio.fs.chmod(tmp_file, "755")
-		if not test_binary(tmp_file) then
-			cleanup_files(tmp_file)
-			http.write_json({success = false, message = translate("Not a valid EasyTier program or architecture mismatch")})
-			return
-		end
-		
-		local core_path = uci:get_first("easytier", "easytier", "easytierbin") or "/usr/bin/easytier-core"
-		local web_path = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web"
-		
-		local final_path
-		if filename == "easytier-web-embed" then
-			final_path = web_path
-		elseif filename == "easytier-core" then
-			final_path = core_path
-		elseif filename == "easytier-cli" then
-			local core_dir = core_path:match("(.*/)")
-			final_path = (core_dir or "/usr/bin/") .. "easytier-cli"
-		end
-		
-		os.execute("rm -f " .. final_path)
-		
-		if os.execute("mv " .. tmp_file .. " " .. final_path) ~= 0 then
-			cleanup_files(tmp_file)
-			http.write_json({success = false, message = translate("Failed to move file. Insufficient space or permission denied")})
-			return
-		end
-		
-		os.execute("chmod 755 " .. final_path)
-		if not test_binary(final_path) then
-			os.execute("rm -f " .. final_path)
-			http.write_json({success = false, message = translate("Not a valid EasyTier program or architecture mismatch")})
-			return
-		end
-		
-		nixio.fs.remove("/tmp/easytier.tag")
-		nixio.fs.remove("/tmp/easytierweb.tag")
-		http.write_json({success = true, message = translate("Binary uploaded successfully to") .. " " .. final_path})
-	end
+	http.write_json({
+		success = false,
+		message = i18n.translate("Manual upload is disabled. Please use online download.")
+	})
 end
 
 function get_wlog()
@@ -1044,6 +894,8 @@ function download_easytier()
 	end
 	
 	local arch = arch_or_error
+	-- 未安装本地 web（如 noweb）时不要求、不安装 easytier-web；mips 发行包本身也无 web
+	local install_web = has_easytier_web() and arch ~= "mips" and arch ~= "mipsel"
 	local proxies = get_github_proxies()
 	local download_dir = "/tmp/easytier_download"
 	local zip_file = download_dir .. "/easytier-linux-" .. arch .. "-" .. version .. ".zip"
@@ -1130,7 +982,7 @@ function download_easytier()
 						web_file = subdir .. "/easytier-web-embed"
 						
 						local files_ok = nixio.fs.access(core_file) and nixio.fs.access(cli_file)
-						if arch ~= "mips" and arch ~= "mipsel" then
+						if install_web then
 							files_ok = files_ok and nixio.fs.access(web_file)
 						end
 						
@@ -1145,7 +997,7 @@ function download_easytier()
 							
 							-- 先赋予执行权限，再测试程序
 							local test_files = {core_file, cli_file}
-							if arch ~= "mips" and arch ~= "mipsel" then
+							if install_web then
 								table.insert(test_files, web_file)
 							end
 							
@@ -1199,7 +1051,7 @@ function download_easytier()
 		{src = cli_file, dest = core_dir .. "easytier-cli"}
 	}
 	
-	if arch ~= "mips" and arch ~= "mipsel" then
+	if install_web then
 		table.insert(programs, {src = web_file, dest = easytierwebbin})
 	end
 	
