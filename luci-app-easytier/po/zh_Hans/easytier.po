@@ -592,6 +592,9 @@ msgstr "门户地址端口"
 msgid "Program Log"
 msgstr "程序日志"
 
+msgid "Program Status"
+msgstr "程序状态"
+
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:120
 msgid "Public Addresses of Specified Listeners"
 msgstr "指定监听器的公网地址"
@@ -1010,7 +1013,7 @@ msgid "If true, allow relay kcp packets from foreign network. default is false (
 msgstr "如果开启，则作为共享节点时也可以转发其他网络的 KCP 数据包。默认关闭（不转发）（ --enable-relay-foreign-network-kcp 参数）"
 
 msgid "EasyTier Core"
-msgstr "EasyTier 配置"
+msgstr "核心配置"
 
 msgid "EasyTier Web"
 msgstr "自建控制台"
@@ -1815,7 +1818,7 @@ msgid "To Instance ID"
 msgstr "目标实例ID"
 
 msgid "Logs"
-msgstr "日志"
+msgstr "程序日志"
 
 msgid "Online Download"
 msgstr "在线下载"

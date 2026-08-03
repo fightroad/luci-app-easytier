@@ -56,7 +56,7 @@ function index()
 	
 	entry({"admin", "vpn"}, firstchild(), "VPN", 45).dependent = false
 	entry({"admin", "vpn", "easytier"}, firstchild(),_("EasyTier"), 46).dependent = true
-	entry({"admin", "vpn", "easytier", "status"}, cbi("easytier_status"),_("Status"), 1).leaf = true
+	entry({"admin", "vpn", "easytier", "status"}, cbi("easytier_status"),_("Program Status"), 1).leaf = true
 	entry({"admin", "vpn", "easytier", "config"}, cbi("easytier"),_("EasyTier Core"), 2).leaf = true
 	if has_easytier_web() then
 		entry({"admin", "vpn", "easytier", "webconsole"}, template("easytier/easytier_web"),_("EasyTier Web"), 3).leaf = true
