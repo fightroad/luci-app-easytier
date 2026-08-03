@@ -118,19 +118,6 @@ local translate = i18n.translate
 	flex-wrap: wrap;
 }
 
-.log-wiki-link {
-	display: inline-flex;
-	align-items: center;
-	height: 36px;
-	margin-right: 8px;
-	flex: 0 0 auto;
-}
-
-.log-wiki-link img {
-	display: block;
-	max-height: 20px;
-}
-
 .log-select {
 	box-sizing: border-box;
 	width: auto;
@@ -359,15 +346,6 @@ local translate = i18n.translate
 		gap: 6px;
 	}
 
-	.log-wiki-link {
-		height: 30px;
-		margin-right: 2px;
-	}
-
-	.log-wiki-link img {
-		max-width: 96px;
-	}
-
 	.log-select {
 		height: 28px;
 		max-width: 96px;
@@ -445,10 +423,6 @@ local translate = i18n.translate
 		gap: 5px;
 	}
 
-	.log-wiki-link img {
-		max-width: 82px;
-	}
-
 	.log-select {
 		max-width: 88px;
 	}
@@ -479,9 +453,6 @@ local translate = i18n.translate
 				<%=translate("web log")%>
 			</button>
 			<% end %>
-			<a class="log-wiki-link" href="https://deepwiki.com/EasyTier/EasyTier" target="_blank">
-				<img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki">
-			</a>
 		</div>
 		<div class="log-controls">
 			<label class="log-switch" id="auto_refresh_switch" title="<%=translate("Auto Refresh")%>">
