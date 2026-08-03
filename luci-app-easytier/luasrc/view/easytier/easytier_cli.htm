@@ -207,10 +207,13 @@ local uci = require 'luci.model.uci'.cursor()
 }
 
 .et-table-container {
-	overflow-x: auto;
+	overflow: auto;
+	max-height: 560px;
+	max-height: min(60vh, 560px);
 	border-radius: 12px;
 	border: 1px solid var(--border-color);
 	background: var(--card-bg);
+	overscroll-behavior: contain;
 }
 
 .et-table {
@@ -353,8 +356,11 @@ local uci = require 'luci.model.uci'.cursor()
 	font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
 	font-size: 13px;
 	color: var(--text-primary);
-	overflow-x: auto;
+	overflow: auto;
+	max-height: 560px;
+	max-height: min(60vh, 560px);
 	line-height: 1.5;
+	overscroll-behavior: contain;
 }
 
 .et-command-panel {
