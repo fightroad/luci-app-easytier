@@ -61,54 +61,53 @@ local translate = i18n.translate
 
 .log-tabs {
 	display: flex;
-	gap: 8px;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
+	gap: 0;
 }
 
-.log-tab {
-	padding: 10px 20px;
-	border: none;
-	background: transparent;
-	color: #757575;
+.log-container .log-tabs .log-tab {
+	display: block;
+	flex: 0 0 auto;
+	margin: 0;
+	padding: 10px 20px 9px;
 	cursor: pointer;
-	border-radius: 8px;
+	user-select: none;
+	color: #757575;
 	font-size: 14px;
 	font-weight: 600;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+	line-height: 1.4;
+	white-space: nowrap;
 	position: relative;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	outline: none;
+	transition: color 0.2s ease, background 0.2s ease;
 }
 
-.log-tab:hover {
-	background: var(--log-hover);
-	transform: translateY(-2px);
+.log-container .log-tabs .log-tab::after {
+	content: '';
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 3px;
+	background: transparent;
+	pointer-events: none;
 }
 
-.log-tab.active {
+.log-container .log-tabs .log-tab:hover {
 	color: var(--tab-active);
 	background: var(--log-hover);
 }
 
-.log-tab.active::after {
-	content: '';
-	position: absolute;
-	bottom: 0;
-	left: 10%;
-	right: 10%;
-	height: 3px;
-	background: var(--tab-active);
-	border-radius: 3px 3px 0 0;
-	animation: slideIn 0.3s ease;
+.log-container .log-tabs .log-tab.active {
+	color: var(--tab-active);
+	background: var(--log-hover);
 }
 
-@keyframes slideIn {
-	from {
-		transform: scaleX(0);
-		opacity: 0;
-	}
-	to {
-		transform: scaleX(1);
-		opacity: 1;
-	}
+.log-container .log-tabs .log-tab.active::after {
+	background: var(--tab-active);
 }
 
 .log-controls {
@@ -330,13 +329,11 @@ local translate = i18n.translate
 	.log-tabs {
 		width: 100%;
 		justify-content: flex-start;
-		gap: 6px;
 	}
 
-	.log-tab {
-		padding: 7px 12px;
+	.log-container .log-tabs .log-tab {
+		padding: 8px 12px 7px;
 		font-size: 12px;
-		border-radius: 6px;
 	}
 	
 	.log-controls {
@@ -439,19 +436,19 @@ local translate = i18n.translate
 
 <div class="log-container">
 	<div class="log-header">
-		<div class="log-tabs">
-			<button class="log-tab active" data-log="core" onclick="switchLog('core')">
+		<div class="log-tabs" role="tablist">
+			<div class="log-tab active" role="tab" tabindex="0" data-log="core" onclick="switchLog('core')">
 				<%=translate("core log")%>
-			</button>
+			</div>
 			<%
 				local uci = require "luci.model.uci".cursor()
 				local webbin = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web"
 				local has_web = nixio.fs.access(webbin, "x")
 				if has_web then
 			%>
-			<button class="log-tab" data-log="web" onclick="switchLog('web')">
+			<div class="log-tab" role="tab" tabindex="0" data-log="web" onclick="switchLog('web')">
 				<%=translate("web log")%>
-			</button>
+			</div>
 			<% end %>
 		</div>
 		<div class="log-controls">

@@ -36,7 +36,7 @@ local uci = require 'luci.model.uci'.cursor()
 	border-radius: 16px;
 	box-shadow: 0 2px 8px var(--card-shadow);
 	border: 1px solid var(--border-color);
-	margin: 20px 0 20px 0;
+	margin: 8px 0 12px;
 	overflow: hidden;
 }
 
@@ -123,53 +123,53 @@ local uci = require 'luci.model.uci'.cursor()
 
 .et-tabs {
 	display: flex;
+	flex-wrap: nowrap;
 	min-width: max-content;
 }
 
-.et-tab {
-	padding: 16px 24px;
+.et-conninfo-container .et-tabs .et-tab {
+	display: block;
+	flex: 0 0 auto;
+	margin: 0;
+	padding: 14px 20px 11px;
 	cursor: pointer;
-	border: none;
-	background: none;
+	user-select: none;
 	color: var(--text-secondary);
 	font-size: 14px;
 	font-weight: 600;
+	line-height: 1.4;
 	white-space: nowrap;
-	border-bottom: 3px solid transparent;
-	transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 	position: relative;
-	overflow: hidden;
+	background: transparent;
+	border: none;
+	box-shadow: none;
+	outline: none;
+	transition: color 0.2s ease, background 0.2s ease;
 }
 
-.et-tab::before {
+.et-conninfo-container .et-tabs .et-tab::after {
 	content: '';
 	position: absolute;
-	top: 0;
 	left: 0;
 	right: 0;
-	bottom: 0;
+	bottom: -1px;
+	height: 3px;
+	background: transparent;
+	pointer-events: none;
+}
+
+.et-conninfo-container .et-tabs .et-tab:hover {
+	color: var(--tab-active);
+	background: var(--tab-hover);
+}
+
+.et-conninfo-container .et-tabs .et-tab.active {
+	color: var(--tab-active);
+	background: var(--tab-hover);
+}
+
+.et-conninfo-container .et-tabs .et-tab.active::after {
 	background: var(--tab-active);
-	opacity: 0;
-	transition: opacity 0.3s ease;
-}
-
-.et-tab:hover::before {
-	opacity: 0.05;
-}
-
-.et-tab:hover {
-	color: var(--tab-active);
-	background: var(--tab-hover);
-}
-
-.et-tab.active {
-	color: var(--tab-active);
-	border-bottom-color: var(--tab-active);
-	background: var(--tab-hover);
-}
-
-.et-tab.active::before {
-	opacity: 0.1;
 }
 
 .et-tab-content {
@@ -399,8 +399,8 @@ local uci = require 'luci.model.uci'.cursor()
 		text-align: center;
 	}
 	
-	.et-tab {
-		padding: 12px 16px;
+	.et-conninfo-container .et-tabs .et-tab {
+		padding: 10px 14px 9px;
 		font-size: 13px;
 	}
 	
@@ -428,19 +428,19 @@ local uci = require 'luci.model.uci'.cursor()
 	</div>
 	
 	<div class="et-tabs-container">
-		<div class="et-tabs">
-			<button class="et-tab active" data-tab="node"><%:Node Info%></button>
-			<button class="et-tab" data-tab="peer"><%:Peer List%></button>
-			<button class="et-tab" data-tab="route"><%:Route Info%></button>
-			<button class="et-tab" data-tab="connector"><%:Connector%></button>
-			<button class="et-tab" data-tab="stun"><%:STUN%></button>
-			<button class="et-tab" data-tab="peercenter"><%:Peer Center%></button>
-			<button class="et-tab" data-tab="vpnportal"><%:VPN Portal%></button>
-			<button class="et-tab" data-tab="proxy"><%:Proxy%></button>
-			<button class="et-tab" data-tab="acl"><%:ACL%></button>
-			<button class="et-tab" data-tab="mappedlistener"><%:Mapped Listener%></button>
-			<button class="et-tab" data-tab="stats"><%:Statistics%></button>
-			<button class="et-tab" data-tab="cmdline"><%:Command Line%></button>
+		<div class="et-tabs" role="tablist">
+			<div class="et-tab active" role="tab" tabindex="0" data-tab="node"><%:Node Info%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="peer"><%:Peer List%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="route"><%:Route Info%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="connector"><%:Connector%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="stun"><%:STUN%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="peercenter"><%:Peer Center%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="vpnportal"><%:VPN Portal%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="proxy"><%:Proxy%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="acl"><%:ACL%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="mappedlistener"><%:Mapped Listener%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="stats"><%:Statistics%></div>
+			<div class="et-tab" role="tab" tabindex="0" data-tab="cmdline"><%:Command Line%></div>
 		</div>
 	</div>
 	
@@ -941,12 +941,19 @@ document.addEventListener('DOMContentLoaded', function() {
 	tabs.forEach(function(tab) {
 		tab.addEventListener('click', function(e) {
 			e.preventDefault();
-			e.stopPropagation();
 			var tabName = this.getAttribute('data-tab');
 			if (tabName) {
 				switchTab(tabName);
 			}
-			return false;
+		});
+		tab.addEventListener('keydown', function(e) {
+			if (e.key === 'Enter' || e.key === ' ') {
+				e.preventDefault();
+				var tabName = this.getAttribute('data-tab');
+				if (tabName) {
+					switchTab(tabName);
+				}
+			}
 		});
 	});
 
