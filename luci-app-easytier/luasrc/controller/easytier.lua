@@ -368,16 +368,23 @@ function get_log()
     luci.http.write(log)
 end
 
+local function log_file_size(path)
+	local st = nixio.fs.stat(path)
+	if st and st.size then
+		return tonumber(st.size) or 0
+	end
+	local out = luci.sys.exec("[ -f '" .. path .. "' ] && wc -c < '" .. path .. "' 2>/dev/null || echo 0")
+	return tonumber((out or ""):match("%d+")) or 0
+end
+
 function get_log_size()
-    local size = luci.sys.exec("[ -f '/tmp/easytier.log' ] && stat -c%s /tmp/easytier.log 2>/dev/null || echo 0")
-    luci.http.prepare_content("application/json")
-    luci.http.write_json({size = tonumber(size) or 0})
+	luci.http.prepare_content("application/json")
+	luci.http.write_json({size = log_file_size("/tmp/easytier.log")})
 end
 
 function get_wlog_size()
-    local size = luci.sys.exec("[ -f '/tmp/easytierweb.log' ] && stat -c%s /tmp/easytierweb.log 2>/dev/null || echo 0")
-    luci.http.prepare_content("application/json")
-    luci.http.write_json({size = tonumber(size) or 0})
+	luci.http.prepare_content("application/json")
+	luci.http.write_json({size = log_file_size("/tmp/easytierweb.log")})
 end
 
 function clear_log()

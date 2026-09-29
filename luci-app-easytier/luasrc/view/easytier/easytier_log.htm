@@ -531,6 +531,16 @@ function switchLog(type) {
 	refreshLog();
 }
 
+function pad2(n) {
+	return (n < 10 ? '0' : '') + n;
+}
+
+function formatLocalTimestamp(date) {
+	if (!date || isNaN(date.getTime())) return '';
+	return date.getFullYear() + '-' + pad2(date.getMonth() + 1) + '-' + pad2(date.getDate())
+		+ ' ' + pad2(date.getHours()) + ':' + pad2(date.getMinutes()) + ':' + pad2(date.getSeconds());
+}
+
 function formatLogLine(line) {
 	if (!line || line.trim() === '') return '';
 	
@@ -538,10 +548,11 @@ function formatLogLine(line) {
 	var content = line.trim();
 	var level = 'INFO';
 	
-	// 匹配 ISO 8601 格式: 2026-04-14T20:30:54.744803154+08:00
-	var isoTimeMatch = content.match(/^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2}:\d{2})\.\d+[+-]\d{2}:\d{2}\s*/);
+	// ISO 8601: ...Z / ...+08:00 / ...-05:00（核心日志多为 UTC Z，展示转浏览器本地时区）
+	var isoTimeMatch = content.match(/^(\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?)(Z|[+-]\d{2}:?\d{2})\s*/);
 	if (isoTimeMatch) {
-		timestamp = isoTimeMatch[1] + ' ' + isoTimeMatch[2];
+		var iso = isoTimeMatch[1] + isoTimeMatch[2];
+		timestamp = formatLocalTimestamp(new Date(iso)) || (isoTimeMatch[1].replace('T', ' '));
 		content = content.substring(isoTimeMatch[0].length);
 	} else {
 		// 匹配简单格式: 2026-04-14 20:19:33
@@ -567,6 +578,22 @@ function formatLogLine(line) {
 	html += '</div>';
 	
 	return html;
+}
+
+function formatBytes(bytes) {
+	var n = parseInt(bytes, 10) || 0;
+	if (n < 1024) return n + ' B';
+	if (n < 1024 * 1024) return (n / 1024).toFixed(2) + ' KB';
+	return (n / 1024 / 1024).toFixed(2) + ' MB';
+}
+
+function sizeLevelClass(bytes) {
+	var mb = (parseInt(bytes, 10) || 0) / 1024 / 1024;
+	if (mb < 1) return 'log-size-1';
+	if (mb < 2) return 'log-size-2';
+	if (mb < 3) return 'log-size-3';
+	if (mb < 4) return 'log-size-4';
+	return 'log-size-5';
 }
 
 function escapeHtml(text) {
@@ -603,10 +630,10 @@ function refreshLog() {
 			
 			content.innerHTML = html;
 			filterLogLevel();
+			updateLogSize();
 			
 			if (autoRefreshEnabled) {
 				content.scrollTop = content.scrollHeight;
-				updateLogSize();
 			}
 		}
 	};
@@ -622,19 +649,16 @@ function updateLogSize() {
 	xhr.open('GET', url, true);
 	xhr.onreadystatechange = function() {
 		if (xhr.readyState === 4 && xhr.status === 200) {
-			var data = JSON.parse(xhr.responseText);
-			var sizeMB = (data.size / 1024 / 1024).toFixed(2);
+			var data = {};
+			try {
+				data = JSON.parse(xhr.responseText) || {};
+			} catch (e) {
+				data = {};
+			}
+			var bytes = data.size || 0;
 			var logPath = currentLog === 'core' ? '/tmp/easytier.log' : '/tmp/easytierweb.log';
-			var sizeClass = '';
-			
-			if (sizeMB < 1) sizeClass = 'log-size-1';
-			else if (sizeMB < 2) sizeClass = 'log-size-2';
-			else if (sizeMB < 3) sizeClass = 'log-size-3';
-			else if (sizeMB < 4) sizeClass = 'log-size-4';
-			else sizeClass = 'log-size-5';
-			
-			document.getElementById('log_size_info').innerHTML = 
-				logPath + ': <span class="' + sizeClass + '">' + sizeMB + ' MB</span>';
+			document.getElementById('log_size_info').innerHTML =
+				logPath + ': <span class="' + sizeLevelClass(bytes) + '">' + formatBytes(bytes) + '</span>';
 		}
 	};
 	xhr.send();
