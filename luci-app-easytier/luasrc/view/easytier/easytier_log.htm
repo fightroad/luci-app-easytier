@@ -32,6 +32,10 @@ local translate = i18n.translate
 		--tab-active: #42A5F5;
 		--shadow: rgba(0,0,0,0.3);
 	}
+
+	.log-select {
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23c8c8c8' d='M2.2 4.2h7.6L6 9z'/%3E%3C/svg%3E");
+	}
 }
 
 .log-container {
@@ -122,9 +126,13 @@ local translate = i18n.translate
 	width: auto;
 	min-width: 0;
 	height: 34px;
-	padding: 6px 24px 6px 10px;
+	padding: 6px 28px 6px 10px;
 	border: 1px solid var(--log-border);
-	background: var(--log-bg);
+	background-color: var(--log-bg);
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666666' d='M2.2 4.2h7.6L6 9z'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 10px center;
+	background-size: 10px 8px;
 	color: var(--log-text);
 	border-radius: 8px;
 	cursor: pointer;
@@ -134,6 +142,8 @@ local translate = i18n.translate
 	box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 	flex: 0 0 auto;
 	max-width: 136px;
+	-webkit-appearance: none;
+	appearance: none;
 }
 
 .log-select:hover, .log-select:focus {
@@ -346,10 +356,11 @@ local translate = i18n.translate
 	.log-select {
 		height: 28px;
 		max-width: 96px;
-		padding: 3px 18px 3px 6px;
+		padding: 3px 22px 3px 6px;
 		font-size: 12px;
 		line-height: 1.1;
 		border-radius: 6px;
+		background-position: right 7px center;
 	}
 	
 	.log-content {
