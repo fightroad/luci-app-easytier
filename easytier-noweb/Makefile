@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 -include $(dir $(lastword $(MAKEFILE_LIST)))../version.mk
 
 PKG_NAME:=easytier-noweb
-PKG_VERSION:=$(or $(EASYTIER_VERSION),2.6.4)
+PKG_VERSION:=$(or $(EASYTIER_VERSION),2.7.0)
 
 ifeq ($(ARCH),mipsel)
 	APP_ARCH:=mipsel
@@ -43,7 +43,7 @@ define Package/$(PKG_NAME)
 	CATEGORY:=Network
 	TITLE:=A simple, decentralized mesh VPN with WireGuard support.
 	DEPENDS:=@(x86_64||arm||aarch64||mipsel||mips) +kmod-tun
-	URL:=https://github.com/EasyTier/EasyTier
+	URL:=https://github.com/fightroad/EasyTier
 	MENU:=1
 endef
 
@@ -54,7 +54,7 @@ endef
 define Build/Prepare
 	mkdir -p $(PKG_BUILD_DIR)
 	if [ ! -f $(PKG_BUILD_DIR)/easytier-core ]; then \
-		wget https://github.com/EasyTier/EasyTier/releases/download/v$(PKG_VERSION)/easytier-linux-$(APP_ARCH)-v$(PKG_VERSION).zip -O $(PKG_BUILD_DIR)/easytier-$(PKG_VERSION).zip; \
+		wget https://github.com/fightroad/EasyTier/releases/download/v$(PKG_VERSION)/easytier-linux-$(APP_ARCH)-v$(PKG_VERSION).zip -O $(PKG_BUILD_DIR)/easytier-$(PKG_VERSION).zip; \
 		unzip -o -j $(PKG_BUILD_DIR)/easytier-$(PKG_VERSION).zip -d $(PKG_BUILD_DIR); \
 		rm -f $(PKG_BUILD_DIR)/easytier-$(PKG_VERSION).zip; \
 	fi

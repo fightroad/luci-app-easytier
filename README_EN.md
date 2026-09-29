@@ -6,7 +6,7 @@ English | [简体中文](README.md)
 [![OpenWrt](https://img.shields.io/badge/OpenWrt-18.06--26.x-orange.svg)](https://openwrt.org)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/EasyTier/luci-app-easytier)
 
-OpenWrt LuCI web interface for managing [EasyTier](https://github.com/EasyTier/EasyTier) - a simple, secure, and decentralized VPN networking solution.
+OpenWrt LuCI web interface for managing [EasyTier](https://github.com/fightroad/EasyTier) - a simple, secure, and decentralized VPN networking solution.
 
 ## ✨ Features
 
@@ -98,9 +98,7 @@ opkg install kmod-tun
 ### Initial Configuration
 
 1. After installing the plugin, navigate to **VPN → EasyTier**
-2. Upload EasyTier binary files on the **Upload Program** page, or directly install the ipk/apk package containing the core (easytier.ipk / easytier.apk)
-   - Supports single files: `easytier-core`, `easytier-cli`, `easytier-web-embed`
-   - Supports compressed packages: `.zip`, `.tar.gz`, `.tar`
+2. Install a core package (`easytier` / `easytier-noweb`), or open **Program Management**, set the install path and version tag (e.g. `v2.7.0`), then use **Online Download**
 3. Configure network parameters on the **EasyTier Core** page
 4. Enable and save the configuration
 
@@ -117,7 +115,7 @@ Two configuration methods are supported:
 - **EasyTier Core** - Configure core parameters (network name, secret key, nodes, etc.)
 - **Self-hosted Console** - Configure easytier-web console
 - **Logs** - View running logs with level filtering support
-- **Upload Program** - Upload and manage EasyTier binary files
+- **Program Management** - Set program path and version, and install/upgrade EasyTier via Online Download
 
 ## 🛠️ Development Guide
 
@@ -248,7 +246,7 @@ This project is licensed under the [Apache License 2.0](LICENSE).
 
 ## 🔗 Related Links
 
-- [EasyTier Official Repository](https://github.com/EasyTier/EasyTier)
+- [EasyTier Repository](https://github.com/fightroad/EasyTier)
 - [EasyTier Official Documentation](https://easytier.cn)
 - [OpenWrt Official Website](https://openwrt.org)
 

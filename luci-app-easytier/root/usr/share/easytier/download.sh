@@ -21,30 +21,10 @@ get_proxy_list() {
 	echo "$proxys"
 }
 
-# 获取最新版本号
-get_latest_version() {
-	local user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36'
-	local tag=""
-	local curltest=$(which curl)
-	
-	if [ -z "$curltest" ] || [ ! -s "$(which curl)" ]; then
-		tag=$(wget --no-check-certificate -T 5 -t 3 --user-agent "$user_agent" --max-redirect=0 --output-document=- \
-			https://api.github.com/repos/EasyTier/EasyTier/releases/latest 2>&1 | grep 'tag_name' | cut -d\" -f4)
-		[ -z "$tag" ] && tag=$(wget --no-check-certificate -T 5 -t 3 --user-agent "$user_agent" --quiet --output-document=- \
-			https://api.github.com/repos/EasyTier/EasyTier/releases/latest 2>&1 | grep 'tag_name' | cut -d\" -f4)
-	else
-		tag=$(curl -k --connect-timeout 3 --user-agent "$user_agent" \
-			https://api.github.com/repos/EasyTier/EasyTier/releases/latest 2>&1 | grep 'tag_name' | cut -d\" -f4)
-		[ -z "$tag" ] && tag=$(curl -Lk --connect-timeout 3 --user-agent "$user_agent" -s \
-			https://api.github.com/repos/EasyTier/EasyTier/releases/latest 2>&1 | grep 'tag_name' | cut -d\" -f4)
-	fi
-	
-	# 如果获取失败，从 UCI 配置或使用默认版本
-	if [ -z "$tag" ]; then
-		tag=$(uci -q get easytier.@easytier[0].fallback_version)
-		[ -z "$tag" ] && tag="v2.6.4"
-	fi
-	
+# 获取下载版本号（与程序管理「程序版本」一致）
+get_download_version() {
+	local tag=$(uci -q get easytier.@easytier[0].fallback_version)
+	[ -z "$tag" ] && tag="v2.7.0"
 	echo "$tag"
 }
 
@@ -55,7 +35,7 @@ download_binary() {
 	local cpucore="$2"
 	local path="$3"
 	local proxys=$(get_proxy_list)
-	local download_url="https://github.com/EasyTier/EasyTier/releases/download/${tag}/easytier-linux-${cpucore}-${tag}.zip"
+	local download_url="https://github.com/fightroad/EasyTier/releases/download/${tag}/easytier-linux-${cpucore}-${tag}.zip"
 	
 	mkdir -p "$path"
 	
@@ -76,7 +56,7 @@ download_binary() {
 		fi
 	done
 	
-	log_message "ERROR" "easytier" "所有代理下载均失败，请手动下载上传程序" "/tmp/easytier.log"
+	log_message "ERROR" "easytier" "所有代理下载均失败，请检查网络/加速镜像，或在程序管理中调整版本后重试" "/tmp/easytier.log"
 	return 1
 }
 
@@ -91,7 +71,7 @@ check_and_download() {
 	if [ ! -f "$easytierbin" ] || [ "$($easytierbin -h 2>&1 | wc -l)" -lt 3 ]; then
 		log_message "INFO" "easytier" "$easytierbin 不存在或程序不完整，开始在线下载..." "/tmp/easytier.log"
 		
-		local tag=$(get_latest_version)
+		local tag=$(get_download_version)
 		log_message "INFO" "easytier" "开始在线下载${tag}版本" "/tmp/easytier.log"
 		
 		if download_binary "$tag" "$cpucore" "$path"; then

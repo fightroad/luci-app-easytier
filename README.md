@@ -6,7 +6,7 @@
 [![OpenWrt](https://img.shields.io/badge/OpenWrt-18.06--26.x-orange.svg)](https://openwrt.org)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/EasyTier/luci-app-easytier)
 
-OpenWrt LuCI界面，用于管理 [EasyTier](https://github.com/EasyTier/EasyTier) - 一个简单、安全、去中心化的内网穿透VPN组网方案。
+OpenWrt LuCI界面，用于管理 [EasyTier](https://github.com/fightroad/EasyTier) - 一个简单、安全、去中心化的内网穿透VPN组网方案。
 
 ## UI 预览
 
@@ -104,9 +104,7 @@ opkg install kmod-tun
 ### 首次配置
 
 1. 安装插件后，进入 **VPN → EasyTier**
-2. 在 **上传程序** 页面上传EasyTier二进制文件或直接安装包含核心的ipk/apk包（easytier.ipk easytier.apk）
-   - 支持单个文件：`easytier-core`, `easytier-cli`, `easytier-web-embed`
-   - 支持压缩包：`.zip`, `.tar.gz`, `.tar`
+2. 安装包含核心的 ipk/apk 包（`easytier` / `easytier-noweb`），或在 **程序管理** 中设置安装路径与程序版本（如 `v2.7.0`），使用「在线下载」安装
 3. 在 **EasyTier Core** 页面配置网络参数
 4. 启用并保存配置
 
@@ -123,7 +121,7 @@ opkg install kmod-tun
 - **EasyTier Core** - 配置核心参数（网络名称、密钥、节点等）
 - **自建控制台** - 配置easytier-web控制台
 - **日志** - 查看运行日志，支持级别过滤
-- **上传程序** - 上传和管理EasyTier二进制文件
+- **程序管理** - 设置程序路径与版本，并通过在线下载安装/升级 EasyTier
 
 ## 🛠️ 开发指南
 
@@ -256,7 +254,7 @@ sed -i 's/util.pcdata/xml.pcdata/g' /usr/lib/lua/luci/model/cbi/easytier.lua
 
 ## 🔗 相关链接
 
-- [EasyTier 官方仓库](https://github.com/EasyTier/EasyTier)
+- [EasyTier 仓库](https://github.com/fightroad/EasyTier)
 - [EasyTier 官方文档](https://easytier.cn)
 - [OpenWrt 官网](https://openwrt.org)
 

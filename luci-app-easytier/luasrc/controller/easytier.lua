@@ -74,7 +74,6 @@ function index()
 	entry({"admin", "vpn", "easytier", "get_wlog"}, call("get_wlog")).leaf = true
 	entry({"admin", "vpn", "easytier", "get_wlog_size"}, call("get_wlog_size")).leaf = true
 	entry({"admin", "vpn", "easytier", "clear_wlog"}, call("clear_wlog")).leaf = true
-	entry({"admin", "vpn", "easytier", "clear_version_cache"}, call("clear_version_cache")).leaf = true
 	entry({"admin", "vpn", "easytier", "get_web_config"}, call("get_web_config")).leaf = true
 	entry({"admin", "vpn", "easytier", "save_web_config"}, call("save_web_config")).leaf = true
 	entry({"admin", "vpn", "easytier", "reset_database"}, call("reset_database")).leaf = true
@@ -139,18 +138,7 @@ function act_status()
 	e.etram = command3:read("*all")
 	command3:close()
 	
-	-- 获取版本信息
-	local cached_newtag = safe_read_file("/tmp/easytiernew.tag")
-	if cached_newtag and cached_newtag ~= "" then
-		e.etnewtag = cached_newtag:gsub("[\r\n]+", "")
-	else
-		e.etnewtag = safe_exec("curl -L -k -s --connect-timeout 3 --user-agent 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' https://api.github.com/repos/EasyTier/EasyTier/releases/latest | grep tag_name | sed 's/[^0-9.]*//g'")
-		if e.etnewtag ~= "" then
-			local f = io.open("/tmp/easytiernew.tag", "w")
-			if f then f:write(e.etnewtag); f:close() end
-		end
-	end
-	
+	-- 获取本机程序版本（仅读本地二进制，不请求 GitHub）
 	local cached_tag = safe_read_file("/tmp/easytier.tag")
 	if cached_tag and cached_tag ~= "" then
 		e.ettag = cached_tag:gsub("[\r\n]+", "")
@@ -179,7 +167,7 @@ function get_upload_config()
 		easytierbin = uci:get_first("easytier", "easytier", "easytierbin") or "/usr/bin/easytier-core",
 		webbin = uci:get_first("easytier", "easytier", "webbin") or "/usr/bin/easytier-web",
 		github_proxys = {},
-		fallback_version = uci:get_first("easytier", "easytier", "fallback_version") or "v2.6.4"
+		fallback_version = uci:get_first("easytier", "easytier", "fallback_version") or "v2.7.0"
 	}
 	
 	-- 读取代理列表（list 类型）
@@ -216,7 +204,7 @@ function save_upload_config()
 	-- 保存配置
 	uci:set("easytier", "@easytier[0]", "easytierbin", data.easytierbin or "/usr/bin/easytier-core")
 	uci:set("easytier", "@easytier[0]", "webbin", data.webbin or "/usr/bin/easytier-web")
-	uci:set("easytier", "@easytier[0]", "fallback_version", data.fallback_version or "v2.6.4")
+	uci:set("easytier", "@easytier[0]", "fallback_version", data.fallback_version or "v2.7.0")
 	
 	-- 删除旧的代理列表
 	uci:delete("easytier", "@easytier[0]", "github_proxys")
@@ -433,16 +421,6 @@ end
 
 function clear_wlog()
 	luci.sys.call("echo '' >/tmp/easytierweb.log")
-end
-
-function clear_version_cache()
-	local type = luci.http.formvalue("type")
-	if type == "core" then
-		luci.sys.call("rm -f /tmp/easytiernew.tag /tmp/easytier.tag")
-	elseif type == "web" then
-		luci.sys.call("rm -f /tmp/easytiernew.tag /tmp/easytierweb.tag")
-	end
-	luci.http.write("OK")
 end
 
 function act_conninfo()
@@ -938,7 +916,7 @@ function download_easytier()
 			return
 		end
 		
-		download_url = proxy .. "https://github.com/EasyTier/EasyTier/releases/download/" .. version .. "/easytier-linux-" .. arch .. "-" .. version .. ".zip"
+		download_url = proxy .. "https://github.com/fightroad/EasyTier/releases/download/" .. version .. "/easytier-linux-" .. arch .. "-" .. version .. ".zip"
 		
 		-- 删除之前的失败文件
 		os.execute("rm -f " .. zip_file)

@@ -173,32 +173,6 @@ protocol = "http://"
 .et-metric-value.mem-level-4 { color: var(--mem-4); }
 .et-metric-value.mem-level-5 { color: var(--mem-5); }
 
-.et-version-badge {
-	display: inline-block;
-	padding: 6px 12px;
-	background: rgba(255, 152, 0, 0.15);
-	color: var(--warning);
-	border-radius: 12px;
-	font-size: 11px;
-	font-weight: 500;
-	white-space: nowrap;
-	margin-left: 8px;
-	position: relative;
-}
-
-.et-version-badge::before {
-	content: "";
-	position: absolute;
-	left: -6px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 0;
-	height: 0;
-	border-top: 6px solid transparent;
-	border-bottom: 6px solid transparent;
-	border-right: 6px solid rgba(255, 152, 0, 0.15);
-}
-
 .et-btn {
 	display: inline-block;
 	padding: 6px 14px;
@@ -590,26 +564,6 @@ function getMemColor(memStr) {
 	return getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim();
 }
 
-function parseUptime(uptime) {
-	if (!uptime) return 0;
-	var days = uptime.match(/(\d+)d/);
-	var hours = uptime.match(/(\d+)h/);
-	var mins = uptime.match(/(\d+)m/);
-	var total = 0;
-	if (days) total += parseInt(days[1]) * 24;
-	if (hours) total += parseInt(hours[1]);
-	if (mins) total += parseInt(mins[1]) / 60;
-	return Math.min((total / 168) * 100, 100);
-}
-
-function compareVersion(current, latest) {
-	if (!current || !latest) return { match: true, latest: '' };
-	// 去除 v 前缀和 - 后面的内容
-	var c = current.replace(/^v/i, '').split('-')[0];
-	var l = latest.replace(/^v/i, '').split('-')[0];
-	return { match: c === l, latest: latest };
-}
-
 function renderService(name, data, isRunning) {
 	var html = '<div class="et-service-section' + (isRunning ? '' : ' service-stopped') + '">';
 	html += '<div class="et-service-header">';
@@ -622,8 +576,6 @@ function renderService(name, data, isRunning) {
 	if (isRunning) {
 		var cpuPercent = parseCPU(data.cpu || '0%');
 		var memLevel = parseMem(data.mem || '0 MB');
-		var uptimePercent = parseUptime(data.uptime || '0m');
-		var versionInfo = compareVersion(data.version, data.latest);
 		var colors = getComputedStyle(document.documentElement);
 		
 		html += '<div class="et-metrics-grid">';
@@ -649,17 +601,13 @@ function renderService(name, data, isRunning) {
 		html += '<div class="et-metric-value">' + (data.uptime || '-') + '</div>';
 		html += '</div></div>';
 		
-		var serviceType = name.indexOf('Core') !== -1 ? 'core' : 'web';
-		html += '<div class="et-metric-item" onclick="showVersionModal(\'' + serviceType + '\')" style="cursor:pointer;">';
-		html += '<div class="et-metric-icon">' + createSVGIcon('version', versionInfo.match ? colors.getPropertyValue('--success').trim() : colors.getPropertyValue('--warning').trim()) + '</div>';
+		html += '<div class="et-metric-item">';
+		html += '<div class="et-metric-icon">' + createSVGIcon('version', colors.getPropertyValue('--success').trim()) + '</div>';
 		html += '<div class="et-metric-info">';
 		html += '<div class="et-metric-label"><%=translate("Version")%></div>';
 		html += '<div class="et-metric-value">';
 		var displayVersion = data.version === 'unknown' ? '<%=translate("Unknown")%>' : data.version;
 		html += '<span>' + (displayVersion || '-') + '</span>';
-		if (!versionInfo.match && versionInfo.latest && data.version !== 'unknown') {
-			html += '<span class="et-version-badge"><%=translate("New Version")%>: ' + versionInfo.latest + '</span>';
-		}
 		html += '</div>';
 		html += '</div></div>';
 		
@@ -684,8 +632,7 @@ function updateStatus(data) {
 		cpu: data.etcpu,
 		mem: data.etram,
 		uptime: data.etsta,
-		version: data.ettag,
-		latest: data.etnewtag
+		version: data.ettag
 	}, data.crunning);
 	
 	if (data.has_web) {
@@ -694,7 +641,6 @@ function updateStatus(data) {
 			mem: data.etwebram,
 			uptime: data.etwebsta,
 			version: data.etwebtag,
-			latest: data.etnewtag,
 			port: data.port
 		}, data.wrunning);
 	}
@@ -1121,17 +1067,6 @@ XHR.poll(3, '<%=url("admin", "vpn", "easytier", "api_status")%>', null, function
 //]]>
 </script>
 
-<div class="version-modal" id="version_modal">
-	<div class="version-modal-content">
-		<div class="version-modal-title"><%=translate("Refresh Version")%></div>
-		<div class="version-modal-message"><%=translate("Clear cached version and fetch latest version from GitHub?")%></div>
-		<div class="version-modal-buttons">
-			<button class="version-modal-btn version-modal-btn-cancel" onclick="closeVersionModal(); return false;"><%=translate("Cancel")%></button>
-			<button class="version-modal-btn version-modal-btn-confirm" onclick="confirmRefreshVersion(); return false;"><%=translate("Confirm")%></button>
-		</div>
-	</div>
-</div>
-
 <div class="version-modal" id="restart_modal">
 	<div class="version-modal-content">
 		<div class="version-modal-title"><%=translate("Restart Service")%></div>
@@ -1142,28 +1077,3 @@ XHR.poll(3, '<%=url("admin", "vpn", "easytier", "api_status")%>', null, function
 		</div>
 	</div>
 </div>
-
-<script>
-var currentVersionType = '';
-
-function showVersionModal(type) {
-	currentVersionType = type;
-	document.getElementById('version_modal').classList.add('show');
-}
-
-function closeVersionModal() {
-	document.getElementById('version_modal').classList.remove('show');
-}
-
-function confirmRefreshVersion() {
-	closeVersionModal();
-	var xhr = new XMLHttpRequest();
-	xhr.open('GET', '<%=url("admin", "vpn", "easytier", "clear_version_cache")%>?type=' + currentVersionType, true);
-	xhr.onload = function() {
-		if (xhr.status === 200) {
-			XHR.poll(0);
-		}
-	};
-	xhr.send();
-}
-</script>
