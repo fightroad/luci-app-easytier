@@ -582,7 +582,7 @@ var translations = {
 	"report_peers": "<%:Report Peers%>",
 
 	// Remaining UI strings
-	"ERROR: Wireguard VPN Portal Not Started": "<%:ERROR: Wireguard VPN Portal Not Started%>",
+	"WireGuard VPN Portal is not started": "<%:WireGuard VPN Portal is not started%>",
 	"no running instances found": "<%:no running instances found%>",
 	"Failed to connect to RPC server. Please check if the RPC port is set to 15888 in the configuration.": "<%:Failed to connect to RPC server. Please check if the RPC port is set to 15888 in the configuration.%>",
 	"Configuration File Content": "<%:Configuration File Content%>"
@@ -670,10 +670,10 @@ function parseTable(content, tabName) {
 		return '<div class="et-error">' + escapeHtml(content) + '</div>';
 	}
 	
-	// VPN Portal特殊处理（兼容 2.6 ERROR 文案与 2.7 portal_name: null）
+	// VPN Portal：未启用是正常状态（兼容 2.6 ERROR 文案与 2.7 portal_name: null）
 	if (content.indexOf('ERROR: Wireguard VPN Portal Not Started') !== -1 ||
 	    /^\s*portal_name:\s*null\s*$/i.test(content.trim())) {
-		return '<div class="et-error">' + escapeHtml(tr('ERROR: Wireguard VPN Portal Not Started')) + '</div>';
+		return '<div class="et-empty">' + escapeHtml(tr('WireGuard VPN Portal is not started')) + '</div>';
 	}
 	
 	// 未找到运行实例错误处理

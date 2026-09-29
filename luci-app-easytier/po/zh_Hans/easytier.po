@@ -1516,8 +1516,8 @@ msgstr "协议"
 msgid "NAT Type"
 msgstr "NAT类型"
 
-msgid "ERROR: Wireguard VPN Portal Not Started"
-msgstr "错误：WireGuard VPN 门户未启动"
+msgid "WireGuard VPN Portal is not started"
+msgstr "WireGuard VPN 门户未启动"
 
 msgid "Refresh"
 msgstr "立即刷新"

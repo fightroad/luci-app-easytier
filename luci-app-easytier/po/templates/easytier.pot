@@ -1051,6 +1051,9 @@ msgstr ""
 msgid "Invalid VPN Portal client format, expected NAME=CIDR"
 msgstr ""
 
+msgid "WireGuard VPN Portal is not started"
+msgstr ""
+
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:526
 
 msgid "VPN-Portal Info"
