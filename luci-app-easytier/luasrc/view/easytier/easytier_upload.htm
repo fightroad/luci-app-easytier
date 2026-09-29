@@ -147,24 +147,21 @@ local translate = i18n.translate
 	color: var(--text-secondary);
 }
 
-.modal {
+.et-modal {
 	display: none;
 	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0,0,0,0.5);
-	z-index: 9999;
+	inset: 0;
+	background: rgba(0,0,0,0.55);
+	z-index: 100000;
 }
 
-.modal.show {
+.et-modal.show {
 	display: flex;
 	align-items: center;
 	justify-content: center;
 }
 
-.modal-content {
+.et-modal-content {
 	background: var(--upload-bg);
 	border-radius: 12px;
 	padding: 24px;
@@ -173,27 +170,27 @@ local translate = i18n.translate
 	box-shadow: 0 4px 12px rgba(0,0,0,0.3);
 }
 
-.modal-title {
+.et-modal-title {
 	font-size: 16px;
 	font-weight: 600;
 	color: var(--text-primary);
 	margin-bottom: 12px;
 }
 
-.modal-message {
+.et-modal-message {
 	font-size: 14px;
 	color: var(--text-secondary);
 	margin-bottom: 20px;
 	line-height: 1.6;
 }
 
-.modal-buttons {
+.et-modal-buttons {
 	display: flex;
 	gap: 12px;
 	justify-content: flex-end;
 }
 
-.modal-btn {
+.et-modal-btn {
 	padding: 8px 16px;
 	border: none;
 	border-radius: 6px;
@@ -203,17 +200,17 @@ local translate = i18n.translate
 	transition: all 0.2s;
 }
 
-.modal-btn-primary {
+.et-modal-btn-primary {
 	background: var(--info);
 	color: white;
 }
 
-.modal-btn-secondary {
+.et-modal-btn-secondary {
 	background: var(--upload-border);
 	color: var(--text-primary);
 }
 
-.modal-btn:hover {
+.et-modal-btn:hover {
 	opacity: 0.9;
 }
 
@@ -333,51 +330,44 @@ local translate = i18n.translate
 	</div>
 	
 	<div class="alert" id="alert_box"></div>
-	
-	<!-- 在线下载模态窗口 -->
-	<div id="download_modal" class="modal">
-		<div class="modal-content">
-			<div class="modal-header">
-				<h3><%=translate("Online Download EasyTier")%></h3>
-			</div>
-			<div class="modal-body">
-				<div style="margin-bottom:16px;">
-					<label style="display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px;">
-						<%=translate("Download Version")%>
-					</label>
-					<div id="download-version-container">
-						<!-- 这里会动态插入备用版本的输入框 -->
-					</div>
-					<div style="font-size:11px;color:#999;opacity:0.8;margin-top:4px;">
-						<%=translate("Download specified version from GitHub and install to specified path")%>
-					</div>
-				</div>
-				<div class="download-progress" id="download_progress" style="display:none;">
-					<div class="progress-bar">
-						<div class="progress-fill" id="download_progress_fill"></div>
-					</div>
-					<div class="progress-text" id="download_progress_text"><%=translate("Downloading...")%> 0%</div>
-					<div style="font-size:11px;color:#666;margin-top:4px;word-break:break-all;overflow-wrap:break-word;" id="download_url_text"></div>
-				</div>
-			</div>
-			<div class="modal-footer" style="text-align:right;">
-				<button class="upload-btn secondary" onclick="closeDownloadModal()"><%=translate("Close")%></button>
-				<button class="upload-btn" onclick="startDownload()" id="download_confirm_btn"><%=translate("Download")%></button>
-			</div>
-		</div>
-	</div>
-	
 </div>
 
-<div class="modal" id="restart_modal">
-	<div class="modal-content">
-		<div class="modal-title"><%=translate("Download Successful")%></div>
-		<div class="modal-message" id="modal_message">
+<!-- 弹窗挂到内容区外，避免被父级裁剪导致遮罩过小 -->
+<div id="download_modal" class="et-modal">
+	<div class="et-modal-content">
+		<div class="et-modal-title"><%=translate("Online Download EasyTier")%></div>
+		<div class="et-modal-message" style="margin-bottom:16px;">
+			<label style="display:block;font-size:13px;font-weight:500;color:var(--text-primary);margin-bottom:4px;">
+				<%=translate("Download Version")%>
+			</label>
+			<input type="text" id="download_fallback_version" class="config-input" placeholder="v2.7.0" style="width:100%;">
+			<div style="font-size:11px;color:var(--text-secondary);margin-top:4px;">
+				<%=translate("Download specified version from GitHub and install to specified path")%>
+			</div>
+		</div>
+		<div class="download-progress" id="download_progress" style="display:none;margin-bottom:16px;">
+			<div class="progress-bar">
+				<div class="progress-fill" id="download_progress_fill"></div>
+			</div>
+			<div class="progress-text" id="download_progress_text"><%=translate("Downloading...")%> 0%</div>
+			<div style="font-size:11px;color:var(--text-secondary);margin-top:4px;word-break:break-all;overflow-wrap:break-word;" id="download_url_text"></div>
+		</div>
+		<div class="et-modal-buttons">
+			<button class="et-modal-btn et-modal-btn-secondary" onclick="closeDownloadModal()"><%=translate("Close")%></button>
+			<button class="et-modal-btn et-modal-btn-primary" onclick="startDownload()" id="download_confirm_btn"><%=translate("Download")%></button>
+		</div>
+	</div>
+</div>
+
+<div class="et-modal" id="restart_modal">
+	<div class="et-modal-content">
+		<div class="et-modal-title"><%=translate("Download Successful")%></div>
+		<div class="et-modal-message" id="modal_message">
 			<%=translate("Download completed. Restart service now?")%>
 		</div>
-		<div class="modal-buttons">
-			<button class="modal-btn modal-btn-secondary" onclick="closeModal()"><%=translate("Later")%></button>
-			<button class="modal-btn modal-btn-primary" onclick="restartService()"><%=translate("Restart Now")%></button>
+		<div class="et-modal-buttons">
+			<button class="et-modal-btn et-modal-btn-secondary" onclick="closeModal()"><%=translate("Later")%></button>
+			<button class="et-modal-btn et-modal-btn-primary" onclick="restartService()"><%=translate("Restart Now")%></button>
 		</div>
 	</div>
 </div>
@@ -669,12 +659,13 @@ function closeModal() {
 }
 
 function showRestartModal() {
-	var modalTitle = document.querySelector('#restart_modal .modal-title');
+	var modalTitle = document.querySelector('#restart_modal .et-modal-title');
 	var modalMessage = document.getElementById('modal_message');
 	
 	modalTitle.textContent = '<%=translate("Download Successful")%>';
 	modalMessage.textContent = '<%=translate("Download completed. Restart service now?")%>';
 	
+	mountModalToBody(restartModal);
 	restartModal.classList.add('show');
 }
 
@@ -699,35 +690,21 @@ function restartService() {
 	xhr.send();
 }
 
+// 把弹窗挂到 body，避开 LuCI 内容区对 fixed 定位的裁剪
+function mountModalToBody(modal) {
+	if (modal && modal.parentNode !== document.body) {
+		document.body.appendChild(modal);
+	}
+}
+
 // 在线下载功能
 function showDownloadModal() {
 	var modal = document.getElementById('download_modal');
-	var downloadContainer = document.getElementById('download-version-container');
-	var originalContainer = document.getElementById('version-selector-container');
-	
-	var clonedContainer = originalContainer.cloneNode(true);
-	clonedContainer.id = 'download-version-selector-container';
-	
-	var downloadBtn = clonedContainer.querySelector('button');
-	if (downloadBtn) {
-		downloadBtn.remove();
-	}
-	
-	clonedContainer.style.display = 'block';
-	var innerDiv = clonedContainer.querySelector('div[style*="flex:1"]');
-	if (innerDiv) {
-		innerDiv.style.flex = 'none';
-	}
-	
-	var input = clonedContainer.querySelector('input');
+	var input = document.getElementById('download_fallback_version');
+	mountModalToBody(modal);
 	if (input) {
-		input.id = 'download_fallback_version';
 		input.value = versionManager.getCurrentVersion() || 'v2.7.0';
 	}
-	
-	downloadContainer.innerHTML = '';
-	downloadContainer.appendChild(clonedContainer);
-	
 	modal.classList.add('show');
 	checkExistingDownload();
 }
@@ -770,11 +747,9 @@ function closeDownloadModal() {
 	
 	// 重置进度条
 	var progress = document.getElementById('download_progress');
-	progress.style.display = 'none';
-	
-	// 清空下载版本容器
-	var downloadContainer = document.getElementById('download-version-container');
-	downloadContainer.innerHTML = '';
+	if (progress) {
+		progress.style.display = 'none';
+	}
 	
 	// 恢复按钮
 	var confirmBtn = document.getElementById('download_confirm_btn');
