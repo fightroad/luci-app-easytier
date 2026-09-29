@@ -670,8 +670,9 @@ function parseTable(content, tabName) {
 		return '<div class="et-error">' + escapeHtml(content) + '</div>';
 	}
 	
-	// VPN Portal特殊处理
-	if (content.indexOf('ERROR: Wireguard VPN Portal Not Started') !== -1) {
+	// VPN Portal特殊处理（兼容 2.6 ERROR 文案与 2.7 portal_name: null）
+	if (content.indexOf('ERROR: Wireguard VPN Portal Not Started') !== -1 ||
+	    /^\s*portal_name:\s*null\s*$/i.test(content.trim())) {
 		return '<div class="et-error">' + escapeHtml(tr('ERROR: Wireguard VPN Portal Not Started')) + '</div>';
 	}
 	

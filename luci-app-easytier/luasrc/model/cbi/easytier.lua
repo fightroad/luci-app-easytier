@@ -198,11 +198,74 @@ instance_name.placeholder = "default"
 instance_name:depends("etcmd", "etcmd")
 
 vpn_portal = s:taboption("privacy", Value, "vpn_portal", translate("VPN Portal URL"),
-        translate("Defines the URL of the VPN portal, allowing other VPN clients to connect.<br>"
-                .. "Example: wg://0.0.0.0:11011/10.14.14.0/24 means the VPN portal is a WireGuard server listening on vpn."
-                .. "example.com:11010, and the VPN clients are in the 10.14.14.0/24 network (--vpn-portal parameter)"))
-vpn_portal.placeholder = "wg://0.0.0.0:11011/10.14.14.0/24"
+        translate("Defines the WireGuard VPN portal listen URL for external WireGuard clients (not EasyTier mesh peers).<br>"
+                .. "EasyTier 2.7 example: wg://0.0.0.0:11013 means listen on port 11013 (--vpn-portal).<br>"
+                .. "Do not reuse listener ports such as TCP/UDP/WS/WSS/WG. Client CIDR and private key are configured separately in 2.7."))
+vpn_portal.placeholder = "wg://0.0.0.0:11013"
 vpn_portal:depends("etcmd", "etcmd")
+vpn_portal.validate = function(self, value, section)
+	if not value or value == "" then
+		return value
+	end
+	value = tostring(value):match("^%s*(.-)%s*$") or ""
+	if value == "" then
+		return value
+	end
+	-- 2.6 style: wg://host:port/10.14.14.0/24
+	if value:match("://[^%s/]+:%d+/%d+%.%d+%.%d+%.%d+/%d+") then
+		return nil, translate("EasyTier 2.7 VPN Portal URL must be listen-only (e.g. wg://0.0.0.0:11013). Put client CIDRs in VPN Portal Clients.")
+	end
+	return value
+end
+
+vpn_portal_private_key = s:taboption("privacy", Value, "vpn_portal_private_key", translate("VPN Portal Private Key"),
+        translate("Base64 WireGuard server private key required by EasyTier 2.7 when VPN Portal URL is set "
+                .. "(ET_VPN_PORTAL_PRIVATE_KEY / --vpn-portal-private-key). Generate with: wg genkey"))
+vpn_portal_private_key.password = true
+vpn_portal_private_key.rmempty = true
+vpn_portal_private_key:depends("etcmd", "etcmd")
+vpn_portal_private_key.write = function(self, section, value)
+	if value and tostring(value):match("%S") then
+		return Value.write(self, section, value)
+	end
+end
+vpn_portal_private_key.validate = function(self, value, section)
+	local portal = self.map:get(section, "vpn_portal")
+	portal = portal and tostring(portal):match("^%s*(.-)%s*$") or ""
+	local key = value and tostring(value):match("^%s*(.-)%s*$") or ""
+	local existing = self.map:get(section, "vpn_portal_private_key")
+	existing = existing and tostring(existing):match("^%s*(.-)%s*$") or ""
+	if portal ~= "" and key == "" and existing == "" then
+		return nil, translate("VPN Portal private key is required when portal URL is set")
+	end
+	return value
+end
+
+vpn_portal_clients = s:taboption("privacy", DynamicList, "vpn_portal_clients", translate("VPN Portal Clients"),
+        translate("Named WireGuard portal clients in NAME=CIDR form, e.g. alice=10.14.14.5/24 "
+                .. "(--vpn-portal-client, may be repeated)"))
+vpn_portal_clients.placeholder = "alice=10.14.14.5/24"
+vpn_portal_clients:depends("etcmd", "etcmd")
+vpn_portal_clients.validate = function(self, value, section)
+	if type(value) == "table" then
+		local i
+		for i = 1, #value do
+			local item = value[i]
+			if item then
+				item = tostring(item):match("^%s*(.-)%s*$") or ""
+				if item ~= "" and not item:match("^[%w._%-]+=%d+%.%d+%.%d+%.%d+/%d+$") then
+					return nil, translate("Invalid VPN Portal client format, expected NAME=CIDR") .. ": " .. item
+				end
+			end
+		end
+	elseif value and value ~= "" then
+		value = tostring(value):match("^%s*(.-)%s*$") or ""
+		if value ~= "" and not value:match("^[%w._%-]+=%d+%.%d+%.%d+%.%d+/%d+$") then
+			return nil, translate("Invalid VPN Portal client format, expected NAME=CIDR") .. ": " .. value
+		end
+	end
+	return value
+end
 
 mtu = s:taboption("privacy", Value, "mtu", translate("MTU"),
         translate("MTU for the TUN device, default is 1380 when unencrypted, and 1360 when encrypted"))

@@ -206,13 +206,13 @@ msgstr "默认协议"
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:214
 
 msgid ""
-"Defines the URL of the VPN portal, allowing other VPN clients to connect."
-"<br>Example: wg://0.0.0.0:11011/10.14.14.0/24 means the VPN portal is a "
-"WireGuard server listening on vpn.example.com:11010, and the VPN clients are "
-"in the 10.14.14.0/24 network (--vpn-portal parameter)"
+"Defines the WireGuard VPN portal listen URL for external WireGuard clients (not EasyTier mesh peers).<br>"
+"EasyTier 2.7 example: wg://0.0.0.0:11013 means listen on port 11013 (--vpn-portal).<br>"
+"Do not reuse listener ports such as TCP/UDP/WS/WSS/WG. Client CIDR and private key are configured separately in 2.7."
 msgstr ""
-"定义 VPN 门户的 URL，允许其他 VPN 客户端连接。<br> 示例：wg://0.0.0.0:11011/10.14.14.0/24，"
-"表示 VPN 门户是一个在 vpn.example.com:11010 上监听的 WireGuard 服务器，并且 VPN 客户端位于 10.14.14.0/24 网络中（--vpn-portal 参数）"
+"定义面向外部 WireGuard 客户端的 VPN 门户监听 URL（不是 EasyTier 节点互连端口）。<br>"
+"EasyTier 2.7 示例：wg://0.0.0.0:11013 表示在 11013 端口监听（--vpn-portal）。<br>"
+"不要占用 TCP/UDP/WS/WSS/WG 等节点监听端口。2.7 中客户端网段和私钥需另行配置。"
 
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:284
 
@@ -885,6 +885,39 @@ msgstr "用于在同一台机器中标识此 VPN 节点的实例名称（-m 参�
 
 msgid "VPN Portal URL"
 msgstr "VPN门户URL"
+
+#: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua
+
+msgid "VPN Portal Private Key"
+msgstr "VPN门户私钥"
+
+msgid ""
+"Base64 WireGuard server private key required by EasyTier 2.7 when VPN Portal URL is set "
+"(ET_VPN_PORTAL_PRIVATE_KEY / --vpn-portal-private-key). Generate with: wg genkey"
+msgstr ""
+"EasyTier 2.7 在设置 VPN 门户 URL 时必须提供的 WireGuard 服务端私钥（base64）"
+"（ET_VPN_PORTAL_PRIVATE_KEY / --vpn-portal-private-key）。可用 wg genkey 生成"
+
+msgid "VPN Portal Clients"
+msgstr "VPN门户客户端"
+
+msgid ""
+"Named WireGuard portal clients in NAME=CIDR form, e.g. alice=10.14.14.5/24 "
+"(--vpn-portal-client, may be repeated)"
+msgstr ""
+"按 NAME=CIDR 填写的 WireGuard 门户客户端，例如 alice=10.14.14.5/24"
+"（--vpn-portal-client，可重复）"
+
+msgid ""
+"EasyTier 2.7 VPN Portal URL must be listen-only (e.g. wg://0.0.0.0:11013). Put client CIDRs in VPN Portal Clients."
+msgstr ""
+"EasyTier 2.7 的 VPN 门户 URL 只能写监听地址（例如 wg://0.0.0.0:11013），客户端网段请填到「VPN门户客户端」"
+
+msgid "VPN Portal private key is required when portal URL is set"
+msgstr "已设置 VPN 门户 URL 时必须填写门户私钥"
+
+msgid "Invalid VPN Portal client format, expected NAME=CIDR"
+msgstr "VPN 门户客户端格式无效，应为 NAME=CIDR"
 
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:526
 

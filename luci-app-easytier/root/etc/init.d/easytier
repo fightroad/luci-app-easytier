@@ -74,6 +74,11 @@ shell_quote() {
 	printf "'%s'" "$(printf "%s" "$1" | sed "s/'/'\\\\''/g")"
 }
 
+# Extract UDP listen port from wg://0.0.0.0:11013
+vpn_portal_listen_port() {
+	printf "%s" "$1" | sed -nE 's#^[^:]+://[^/]*:([0-9]+).*#\1#p' | head -n1
+}
+
 check_bin() {
 	# 优先使用 UCI 配置的代理列表（list 类型），否则使用默认值
 	local proxys=""
@@ -213,6 +218,8 @@ get_etconfig() {
 		desvice_name="$(uci -q get easytier.@easytier[0].desvice_name)"
 		instance_name="$(uci -q get easytier.@easytier[0].instance_name)"
 		vpn_portal="$(uci -q get easytier.@easytier[0].vpn_portal)"
+		vpn_portal_private_key="$(uci -q get easytier.@easytier[0].vpn_portal_private_key)"
+		vpn_portal_clients="$(uci -q get easytier.@easytier[0].vpn_portal_clients)"
 		mtu="$(uci -q get easytier.@easytier[0].mtu)"
 		default_protocol="$(uci -q get easytier.@easytier[0].default_protocol)"
 		disable_encryption="$(uci -q get easytier.@easytier[0].disable_encryption || echo 0)"
@@ -322,6 +329,19 @@ set_firewall() {
 		    		uci set firewall.easytier_wg.proto="udp"
 		    		uci set firewall.easytier_wg.dest_port="$wg_port"
 		    		uci set firewall.easytier_wg.enabled="1"
+		   	fi
+		   	if [ ! -z "$vpn_portal_port" ] ; then
+		    		echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 添加防火墙规则 easytier_vpn_portal 放行UDP端口 ${vpn_portal_port} " >>/tmp/easytier.log
+		    		uci -q delete firewall.easytier_vpn_portal
+		    		uci set firewall.easytier_vpn_portal=rule
+		    		uci set firewall.easytier_vpn_portal.name="easytier_vpn_portal"
+		    		uci set firewall.easytier_vpn_portal.target="ACCEPT"
+		    		uci set firewall.easytier_vpn_portal.src="wan"
+		    		uci set firewall.easytier_vpn_portal.proto="udp"
+		    		uci set firewall.easytier_vpn_portal.dest_port="$vpn_portal_port"
+		    		uci set firewall.easytier_vpn_portal.enabled="1"
+		   	else
+		    		uci -q delete firewall.easytier_vpn_portal
 		   	fi
 		   	if [ ! -z "$quic_port" ] ; then
 		    		echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 添加防火墙规则 easytier_quic 放行端口 ${quic_port} " >>/tmp/easytier.log
@@ -445,6 +465,8 @@ start_et() {
 			get_tz
 			[ -z "$SET_TZ" ] || procd_set_param env TZ="$SET_TZ"
 			core_cmd=""
+			vpn_portal_env=""
+			vpn_portal_port=""
 			if [ "$etcmd" = "etcmd" ] ; then
 				#默认方式启动
 				[ -z "$network_name" ] || core_cmd="${core_cmd} --network-name $(shell_quote "$network_name")"
@@ -531,7 +553,27 @@ start_et() {
 				[ "$listenermode" = "ON" ] || core_cmd="${core_cmd} --no-listener"
 				[ -z "$desvice_name" ] || core_cmd="${core_cmd} --hostname $(shell_quote "$desvice_name")"
 				[ -z "$instance_name" ] || core_cmd="${core_cmd} -m $instance_name"
-				[ -z "$vpn_portal" ] || core_cmd="${core_cmd} --vpn-portal $vpn_portal"
+				# EasyTier 2.7 VPN Portal: listen URL + private key env + optional clients
+				vpn_portal_port=""
+				vpn_portal_env=""
+				if [ ! -z "$vpn_portal" ] ; then
+					if [ -z "$vpn_portal_private_key" ] ; then
+						echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : VPN Portal 已配置但缺少私钥，已忽略门户启动" >>/tmp/easytier.log
+					else
+						core_cmd="${core_cmd} --vpn-portal $(shell_quote "$vpn_portal")"
+						vpn_portal_env="export ET_VPN_PORTAL_PRIVATE_KEY=$(shell_quote "$vpn_portal_private_key"); "
+						vpn_portal_port="$(vpn_portal_listen_port "$vpn_portal")"
+						if [ ! -z "$vpn_portal_clients" ] ; then
+							if [[ "$(grep "list vpn_portal_clients" /etc/config/easytier | awk '{print $3}' | wc -l ) " -eq 1 ]]; then
+								core_cmd="${core_cmd} --vpn-portal-client $(shell_quote "$vpn_portal_clients")"
+							else
+								for vpn_portal_client in $(cat /etc/config/easytier | grep 'list vpn_portal_clients' | awk -F 'list vpn_portal_clients' '{print $2}' | sed "s/'/\n/g" | tr -d " ' "); do
+									[ -z "$vpn_portal_client" ] || core_cmd="${core_cmd} --vpn-portal-client $(shell_quote "$vpn_portal_client")"
+								done
+							fi
+						fi
+					fi
+				fi
 				[ -z "$mtu" ] || core_cmd="${core_cmd} --mtu $mtu"
 				[ "$default_protocol" = "-" ] || core_cmd="${core_cmd} --default-protocol $default_protocol"
 				[ -z "$tunname" ] || core_cmd="${core_cmd} --dev-name $tunname"
@@ -594,7 +636,7 @@ EOF
 				[ -z "$desvice_name" ] || core_cmd="${core_cmd} --hostname $(shell_quote "$desvice_name")"
 			fi
 	     		procd_set_param command /bin/sh -c "
-			cd /tmp ; ${easytierbin} ${core_cmd} --console-log-level ${log} >> /tmp/easytier.log 2>&1 &
+			cd /tmp ; ${vpn_portal_env}${easytierbin} ${core_cmd} --console-log-level ${log} >> /tmp/easytier.log 2>&1 &
 			ET_CORE_PID=\$!
 			{
 			while true; do
