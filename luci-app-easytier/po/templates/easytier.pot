@@ -30,21 +30,6 @@ msgid ""
 "take effect"
 msgstr ""
 
-#: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:5
-
-msgid ""
-"A simple, secure, decentralized VPN solution for intranet penetration, "
-"implemented in Rust using the Tokio framework. Project URL: <a href="
-"\"https://github.com/fightroad/EasyTier\" target=\"_blank\">github.com/"
-"fightroad/EasyTier</a>&nbsp;&nbsp;<a href=\"http://easytier.cn\" target="
-"\"_blank\">Official Documentation</a>&nbsp;&nbsp;<a href=\"http://qm.qq.com/"
-"cgi-bin/qm/qr?"
-"_wv=1027&k=jhP2Z4UsEZ8wvfGPLrs0VwLKn_uz0Q_p&authKey=OGKSQLfg61YPCpVQuvx"
-"%2BxE7hUKBVBEVi9PljrDKbHlle6xqOXx8sOwPPTncMambK&noverify=0&group_code=949700262\" "
-"target=\"_blank\">QQ Group</a>&nbsp;&nbsp;<a href=\"https://doc.oee.icu"
-"\" target=\"_blank\">Beginner Tutorial</a>"
-msgstr ""
-
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:720
 
 msgid "API Port"
@@ -278,21 +263,6 @@ msgid ""
 "Custom name for the virtual TUN interface (--dev-name parameter)<br>If using "
 "web configuration, please use the same virtual network interface name as in "
 "the web config for firewall allowance"
-msgstr ""
-
-#: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:581
-
-msgid ""
-"Customize the storage path for easytier-core. Make sure to provide the full "
-"path and filename. If the specified path has insufficient space, it will "
-"automatically move to /tmp/easytier-core"
-msgstr ""
-
-#: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:587
-
-msgid ""
-"Customize the storage path for easytier-web. Make sure to provide the full "
-"path and filename, then upload the installer"
 msgstr ""
 
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:703
@@ -1134,18 +1104,6 @@ msgid ""
 "enable with caution. (--accept-dns parameter)"
 msgstr ""
 
-#: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:607
-
-msgid ""
-"You can directly upload the binary programs easytier-core and easytier-cli, "
-"or a compressed .zip archive. Uploading a new version will automatically "
-"overwrite the old one. Download link: <a href='https://github.com/fightroad/"
-"EasyTier/releases' target='_blank'>github.com/fightroad/EasyTier</a><br>The "
-"uploaded files will be saved in the /tmp folder. If a custom program path is "
-"specified, the program will be automatically moved to that path when started."
-"<br>"
-msgstr ""
-
 #: applications/luci-app-easytier/luasrc/controller/easytier.lua:11
 
 msgid "core log"
@@ -1535,13 +1493,7 @@ msgstr ""
 msgid "Files will be uploaded to the paths specified above"
 msgstr ""
 
-msgid "EasyTier console uses easytier-web-embed. The easytier-web binary will be rejected during upload validation."
-msgstr ""
-
 msgid "Compressed archive containing binaries"
-msgstr ""
-
-msgid "Drag *.tar.gz / *.zip / easytier binaries here or click to select file"
 msgstr ""
 
 msgid "Error: Program not running! Please start the program and refresh"
