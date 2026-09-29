@@ -182,7 +182,11 @@ check_config() {
                    quic_port=$(grep -oE '"quic://(\[::\]|0\.0\.0\.0):[0-9]+"' "$config_file" | head -n1 | sed -E 's/.*:([0-9]+)"/\1/')
                    tunname=$(grep "dev_name =" "$config_file" | awk '{print $3}' | tr -d "'\", ")
                    proxy_network=$(grep -F '[[proxy_network]]' $config_file)
-                   wireguard_port=$(cat $config_file | grep "wireguard_listen = " | awk -F ":" '{print $2}'| tr -d '/", ')
+                   # 2.7: [vpn_portal_config] wireguard_listen = "0.0.0.0:11013" / "[::]:11013"
+                   vpn_portal_port=""
+                   _wl=$(grep -E '^\s*wireguard_listen\s*=' "$config_file" | head -n1 | sed -E 's/.*=[[:space:]]*//; s/["'\'']//g; s/[[:space:]]//g')
+                   [ -n "$_wl" ] && vpn_portal_port="$(vpn_portal_listen_port "wg://${_wl}")"
+                   wireguard_port="$vpn_portal_port"
                    log="$(uci -q get easytier.@easytier[0].log || echo off)"
                    echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 检测配置文件可用性 ${easytierbin} --check-config --config-file ${config_file}" >>/tmp/easytier.log
                    ${easytierbin} --check-config --config-file ${config_file} >> /tmp/easytier.log 2>&1 &
@@ -945,6 +949,7 @@ stop_service() {
                 	uci -q delete firewall.easytier_quic >/dev/null 2>&1
                 	uci -q delete firewall.easytier_wireguard >/dev/null 2>&1
                 	uci -q delete firewall.easytier_socks5 >/dev/null 2>&1
+                	uci -q delete firewall.easytier_vpn_portal >/dev/null 2>&1
                 	
                 	# 延迟重载，避免与网络事件冲突
                 	if [ -n "$(uci changes network)" ] || [ -n "$(uci changes firewall)" ]; then
