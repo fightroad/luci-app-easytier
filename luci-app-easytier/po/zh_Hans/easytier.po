@@ -229,6 +229,30 @@ msgstr "禁用加密"
 msgid "Disable IPv6"
 msgstr "禁用ipv6"
 
+msgid "IPv6 Public Address Provider"
+msgstr "IPv6 公网地址提供者"
+
+msgid ""
+"Share this node's public IPv6 subnet with peers so they can obtain public IPv6 addresses "
+"(Linux only, --ipv6-public-addr-provider parameter)"
+msgstr "将本节点的公网 IPv6 子网分享给对等节点，使其可获取公网 IPv6 地址（仅 Linux，--ipv6-public-addr-provider 参数）"
+
+msgid "IPv6 Public Address Auto"
+msgstr "自动获取公网 IPv6"
+
+msgid ""
+"Auto-obtain a public IPv6 address from a peer that shares its IPv6 subnet "
+"(--ipv6-public-addr-auto parameter)"
+msgstr "从分享 IPv6 子网的对等节点自动获取公网 IPv6 地址（--ipv6-public-addr-auto 参数）"
+
+msgid "IPv6 Public Address Prefix"
+msgstr "IPv6 公网地址前缀"
+
+msgid ""
+"Manually specify the public IPv6 subnet to share instead of auto-detecting from system routes "
+"(--ipv6-public-addr-prefix parameter)"
+msgstr "手动指定要分享的公网 IPv6 子网，而不是从系统路由自动检测（--ipv6-public-addr-prefix 参数）"
+
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:337
 
 msgid "Disable KCP Input"
@@ -1099,6 +1123,30 @@ msgstr ""
 "作为共享节点时，限制非本地网络的流量转发速率，默认无限制，单位 BPS （字节每秒）"
 "(--foreign-relay-bps-limit 参数)"
 
+msgid "STUN Servers"
+msgstr "STUN 服务器"
+
+msgid ""
+"Override default UDP STUN servers. TCP STUN also uses this list when TCP STUN Servers is unset. "
+"Leave empty to use built-in defaults (--stun-servers parameter)"
+msgstr "覆盖默认 UDP STUN 服务器。未设置 TCP STUN 时也会使用此列表。留空则用内置默认值（--stun-servers 参数）"
+
+msgid "STUN Servers IPv6"
+msgstr "IPv6 STUN 服务器"
+
+msgid ""
+"Override default IPv6 STUN servers. Leave empty for defaults "
+"(--stun-servers-v6 parameter)"
+msgstr "覆盖默认 IPv6 STUN 服务器。留空则用默认值（--stun-servers-v6 参数）"
+
+msgid "TCP STUN Servers"
+msgstr "TCP STUN 服务器"
+
+msgid ""
+"Override default TCP STUN servers. If unset, TCP STUN uses STUN Servers when configured "
+"(--tcp-stun-servers parameter)"
+msgstr "覆盖默认 TCP STUN 服务器。未设置时，若已配置 STUN 服务器则沿用（--tcp-stun-servers 参数）"
+
 msgid "Extra Parameters"
 msgstr "额外参数"
 
@@ -1131,6 +1179,30 @@ msgstr "仅P2P"
 
 msgid "only communicate with peers that already establish p2p connection. (--p2p-only parameter)"
 msgstr "仅与已经建立P2P连接的对等节点通信（ --p2p-only 参数）"
+
+msgid "Lazy P2P"
+msgstr "按需 P2P"
+
+msgid ""
+"Only try to establish P2P when traffic actually needs the peer; peers marked as need-p2p "
+"are still connected proactively (--lazy-p2p parameter)"
+msgstr "仅在有实际流量需要时才尝试建立 P2P；标记为 need-p2p 的节点仍会主动连接（--lazy-p2p 参数）"
+
+msgid "Need P2P"
+msgstr "需要 P2P"
+
+msgid ""
+"Announce that other peers should proactively establish P2P connections to this node "
+"even when they enable lazy-p2p (--need-p2p parameter)"
+msgstr "宣告其他节点即使开启 lazy-p2p 也应主动与本节点建立 P2P（--need-p2p 参数）"
+
+msgid "Disable UPnP"
+msgstr "禁用 UPnP"
+
+msgid ""
+"Disable runtime UPnP/NAT-PMP port mapping for eligible listeners. "
+"Automatic port mapping is enabled by default (--disable-upnp parameter)"
+msgstr "禁用合格监听口的运行时 UPnP/NAT-PMP 端口映射。默认开启自动映射（--disable-upnp 参数）"
 
 msgid "Disable TCP"
 msgstr "禁用TCP"

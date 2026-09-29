@@ -310,6 +310,30 @@ msgstr ""
 msgid "Disable IPv6"
 msgstr ""
 
+msgid "IPv6 Public Address Provider"
+msgstr ""
+
+msgid ""
+"Share this node's public IPv6 subnet with peers so they can obtain public IPv6 addresses "
+"(Linux only, --ipv6-public-addr-provider parameter)"
+msgstr ""
+
+msgid "IPv6 Public Address Auto"
+msgstr ""
+
+msgid ""
+"Auto-obtain a public IPv6 address from a peer that shares its IPv6 subnet "
+"(--ipv6-public-addr-auto parameter)"
+msgstr ""
+
+msgid "IPv6 Public Address Prefix"
+msgstr ""
+
+msgid ""
+"Manually specify the public IPv6 subnet to share instead of auto-detecting from system routes "
+"(--ipv6-public-addr-prefix parameter)"
+msgstr ""
+
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:337
 
 msgid "Disable KCP Input"
@@ -1205,6 +1229,30 @@ msgid ""
 "(--foreign-relay-bps-limit parameter)"
 msgstr ""
 
+msgid "STUN Servers"
+msgstr ""
+
+msgid ""
+"Override default UDP STUN servers. TCP STUN also uses this list when TCP STUN Servers is unset. "
+"Leave empty to use built-in defaults (--stun-servers parameter)"
+msgstr ""
+
+msgid "STUN Servers IPv6"
+msgstr ""
+
+msgid ""
+"Override default IPv6 STUN servers. Leave empty for defaults "
+"(--stun-servers-v6 parameter)"
+msgstr ""
+
+msgid "TCP STUN Servers"
+msgstr ""
+
+msgid ""
+"Override default TCP STUN servers. If unset, TCP STUN uses STUN Servers when configured "
+"(--tcp-stun-servers parameter)"
+msgstr ""
+
 msgid "Extra Parameters"
 msgstr ""
 
@@ -1251,6 +1299,30 @@ msgid "P2P only"
 msgstr ""
 
 msgid "only communicate with peers that already establish p2p connection. (--p2p-only parameter)"
+msgstr ""
+
+msgid "Lazy P2P"
+msgstr ""
+
+msgid ""
+"Only try to establish P2P when traffic actually needs the peer; peers marked as need-p2p "
+"are still connected proactively (--lazy-p2p parameter)"
+msgstr ""
+
+msgid "Need P2P"
+msgstr ""
+
+msgid ""
+"Announce that other peers should proactively establish P2P connections to this node "
+"even when they enable lazy-p2p (--need-p2p parameter)"
+msgstr ""
+
+msgid "Disable UPnP"
+msgstr ""
+
+msgid ""
+"Disable runtime UPnP/NAT-PMP port mapping for eligible listeners. "
+"Automatic port mapping is enabled by default (--disable-upnp parameter)"
 msgstr ""
 
 msgid "Disable TCP"

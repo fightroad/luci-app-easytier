@@ -74,6 +74,24 @@ shell_quote() {
 	printf "'%s'" "$(printf "%s" "$1" | sed "s/'/'\\\\''/g")"
 }
 
+# Append repeated CLI flags from a UCI list option (list name, flag, current uci value)
+append_uci_list_flag() {
+	local opt="$1"
+	local flag="$2"
+	local val="$3"
+	local item count
+	[ -z "$val" ] && return 0
+	count=$(grep -c "list ${opt} " /etc/config/easytier 2>/dev/null) || count=0
+	if [ "$count" -eq 1 ]; then
+		core_cmd="${core_cmd} ${flag} $(shell_quote "$val")"
+	else
+		# shellcheck disable=SC2013
+		for item in $(grep "list ${opt} " /etc/config/easytier 2>/dev/null | awk -F "list ${opt} " '{print $2}' | sed "s/'/\n/g" | tr -d " ' "); do
+			[ -z "$item" ] || core_cmd="${core_cmd} ${flag} $(shell_quote "$item")"
+		done
+	fi
+}
+
 # Extract UDP listen port from wg://0.0.0.0:11013
 vpn_portal_listen_port() {
 	printf "%s" "$1" | sed -nE 's#^[^:]+://[^/]*:([0-9]+).*#\1#p' | head -n1
@@ -227,6 +245,9 @@ get_etconfig() {
 		multi_thread="$(uci -q get easytier.@easytier[0].multi_thread || echo 0)"
 		multi_thread_count="$(uci -q get easytier.@easytier[0].multi_thread_count)"
 		disable_ipv6="$(uci -q get easytier.@easytier[0].disable_ipv6 || echo 0)"
+		ipv6_public_addr_provider="$(uci -q get easytier.@easytier[0].ipv6_public_addr_provider || echo 0)"
+		ipv6_public_addr_auto="$(uci -q get easytier.@easytier[0].ipv6_public_addr_auto || echo 0)"
+		ipv6_public_addr_prefix="$(uci -q get easytier.@easytier[0].ipv6_public_addr_prefix)"
 		latency_first="$(uci -q get easytier.@easytier[0].latency_first || echo 0)"
 		exit_node="$(uci -q get easytier.@easytier[0].exit_node || echo 0)"
 		smoltcp="$(uci -q get easytier.@easytier[0].smoltcp || echo 0)"
@@ -256,12 +277,18 @@ get_etconfig() {
 		encryption_algorithm="$(uci -q get easytier.@easytier[0].encryption_algorithm)"
 		
 		p2p_only="$(uci -q get easytier.@easytier[0].p2p_only || echo 0)"
+		lazy_p2p="$(uci -q get easytier.@easytier[0].lazy_p2p || echo 0)"
+		need_p2p="$(uci -q get easytier.@easytier[0].need_p2p || echo 0)"
+		disable_upnp="$(uci -q get easytier.@easytier[0].disable_upnp || echo 0)"
 		disable_tcp="$(uci -q get easytier.@easytier[0].disable_tcp || echo 0)"
 		disable_sym="$(uci -q get easytier.@easytier[0].disable_sym || echo 0)"
 		udp_white_port="$(uci -q get easytier.@easytier[0].udp_white_port)"
 		tcp_white_port="$(uci -q get easytier.@easytier[0].tcp_white_port)"
 		disable_relay_kcp="$(uci -q get easytier.@easytier[0].disable_relay_kcp || echo 0)"
 		relay_kcp="$(uci -q get easytier.@easytier[0].relay_kcp || echo 0)"
+		stun_servers="$(uci -q get easytier.@easytier[0].stun_servers)"
+		stun_servers_v6="$(uci -q get easytier.@easytier[0].stun_servers_v6)"
+		tcp_stun_servers="$(uci -q get easytier.@easytier[0].tcp_stun_servers)"
 		auto_config_interface="$(uci -q get easytier.@easytier[0].auto_config_interface || echo 1)"
 		interface_netmask="$(uci -q get easytier.@easytier[0].interface_netmask)"
 		auto_config_firewall="$(uci -q get easytier.@easytier[0].auto_config_firewall || echo 1)"
@@ -583,6 +610,9 @@ start_et() {
 				[ "$no_tun" = "0" ] || core_cmd="${core_cmd} --no-tun"
 				[ "$smoltcp" = "0" ] || core_cmd="${core_cmd} --use-smoltcp"
 				[ "$disable_ipv6" = "0" ] || core_cmd="${core_cmd} --disable-ipv6"
+				[ "$ipv6_public_addr_provider" = "0" ] || core_cmd="${core_cmd} --ipv6-public-addr-provider"
+				[ "$ipv6_public_addr_auto" = "0" ] || core_cmd="${core_cmd} --ipv6-public-addr-auto"
+				[ -z "$ipv6_public_addr_prefix" ] || core_cmd="${core_cmd} --ipv6-public-addr-prefix $(shell_quote "$ipv6_public_addr_prefix")"
 				[ "$latency_first" = "0" ] || core_cmd="${core_cmd} --latency-first"
 				[ "$exit_node" = "0" ] || core_cmd="${core_cmd} --enable-exit-node"
               	  		[ "$disable_p2p" = "0" ] || core_cmd="${core_cmd} --disable-p2p"
@@ -603,6 +633,9 @@ start_et() {
 					core_cmd="${core_cmd} --encryption-algorithm ${encryption_algorithm}"
 				fi
 				[ "$p2p_only" = "0" ] || core_cmd="${core_cmd} --p2p-only"
+				[ "$lazy_p2p" = "0" ] || core_cmd="${core_cmd} --lazy-p2p"
+				[ "$need_p2p" = "0" ] || core_cmd="${core_cmd} --need-p2p"
+				[ "$disable_upnp" = "0" ] || core_cmd="${core_cmd} --disable-upnp"
 				[ "$disable_tcp" = "0" ] || core_cmd="${core_cmd} --disable-tcp-hole-punching"
 				[ "$disable_udp" = "0" ] || core_cmd="${core_cmd} --disable-udp-hole-punching"
 				[ "$disable_sym" = "0" ] || core_cmd="${core_cmd} --disable-sym-hole-punching"
@@ -610,6 +643,9 @@ start_et() {
 				[ "$relay_kcp" = "0" ] || core_cmd="${core_cmd} --enable-relay-foreign-network-kcp true"
 				[ -z "$udp_white_port" ] || core_cmd="${core_cmd} --udp-whitelist $udp_white_port"
 				[ -z "$tcp_white_port" ] || core_cmd="${core_cmd} --tcp-whitelist $tcp_white_port"
+				append_uci_list_flag "stun_servers" "--stun-servers" "$stun_servers"
+				append_uci_list_flag "stun_servers_v6" "--stun-servers-v6" "$stun_servers_v6"
+				append_uci_list_flag "tcp_stun_servers" "--tcp-stun-servers" "$tcp_stun_servers"
 				if [ -n "$extra_args" ] ; then
 					while IFS= read -r extra_arg; do
 						[ -n "$extra_arg" ] && core_cmd="${core_cmd} $extra_arg"

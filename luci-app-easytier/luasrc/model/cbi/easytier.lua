@@ -319,6 +319,22 @@ disable_ipv6 = s:taboption("privacy", Flag, "disable_ipv6", translate("Disable I
         translate("Do not use IPv6 (--disable-ipv6 parameter)"))
 disable_ipv6:depends("etcmd", "etcmd")
 
+ipv6_public_addr_provider = s:taboption("privacy", Flag, "ipv6_public_addr_provider", translate("IPv6 Public Address Provider"),
+        translate("Share this node's public IPv6 subnet with peers so they can obtain public IPv6 addresses "
+                .. "(Linux only, --ipv6-public-addr-provider parameter)"))
+ipv6_public_addr_provider:depends("etcmd", "etcmd")
+
+ipv6_public_addr_auto = s:taboption("privacy", Flag, "ipv6_public_addr_auto", translate("IPv6 Public Address Auto"),
+        translate("Auto-obtain a public IPv6 address from a peer that shares its IPv6 subnet "
+                .. "(--ipv6-public-addr-auto parameter)"))
+ipv6_public_addr_auto:depends("etcmd", "etcmd")
+
+ipv6_public_addr_prefix = s:taboption("privacy", Value, "ipv6_public_addr_prefix", translate("IPv6 Public Address Prefix"),
+        translate("Manually specify the public IPv6 subnet to share instead of auto-detecting from system routes "
+                .. "(--ipv6-public-addr-prefix parameter)"))
+ipv6_public_addr_prefix.placeholder = "2001:db8::/64"
+ipv6_public_addr_prefix:depends("etcmd", "etcmd")
+
 latency_first = s:taboption("privacy", Flag, "latency_first", translate("Enable Latency First"),
         translate("Latency-first mode: attempts to forward traffic via the lowest latency path. "
                 .. "By default, the shortest path is used (--latency-first parameter)"))
@@ -382,6 +398,21 @@ disable_p2p:depends("etcmd", "etcmd")
 p2p_only = s:taboption("privacy", Flag, "p2p_only", translate("P2P only"),
         translate("only communicate with peers that already establish p2p connection. (--p2p-only parameter)"))
 p2p_only:depends("etcmd", "etcmd")
+
+lazy_p2p = s:taboption("privacy", Flag, "lazy_p2p", translate("Lazy P2P"),
+        translate("Only try to establish P2P when traffic actually needs the peer; peers marked as need-p2p "
+                .. "are still connected proactively (--lazy-p2p parameter)"))
+lazy_p2p:depends("etcmd", "etcmd")
+
+need_p2p = s:taboption("privacy", Flag, "need_p2p", translate("Need P2P"),
+        translate("Announce that other peers should proactively establish P2P connections to this node "
+                .. "even when they enable lazy-p2p (--need-p2p parameter)"))
+need_p2p:depends("etcmd", "etcmd")
+
+disable_upnp = s:taboption("privacy", Flag, "disable_upnp", translate("Disable UPnP"),
+        translate("Disable runtime UPnP/NAT-PMP port mapping for eligible listeners. "
+                .. "Automatic port mapping is enabled by default (--disable-upnp parameter)"))
+disable_upnp:depends("etcmd", "etcmd")
 
 disable_udp = s:taboption("privacy", Flag, "disable_udp", translate("Disable UDP"),
         translate("Disable UDP hole punching (--disable-udp-hole-punching parameter)"))
@@ -466,6 +497,24 @@ foreign_relay_bps_limit = s:taboption("privacy", Value, "foreign_relay_bps_limit
         translate("the maximum bps limit for foreign network relay, default is no limit. unit: BPS (bytes per second). "
                 .. "(--foreign-relay-bps-limit parameter)"))
 foreign_relay_bps_limit:depends("etcmd", "etcmd")
+
+stun_servers = s:taboption("privacy", DynamicList, "stun_servers", translate("STUN Servers"),
+        translate("Override default UDP STUN servers. TCP STUN also uses this list when TCP STUN Servers is unset. "
+                .. "Leave empty to use built-in defaults (--stun-servers parameter)"))
+stun_servers.placeholder = "stun.l.google.com:19302"
+stun_servers:depends("etcmd", "etcmd")
+
+stun_servers_v6 = s:taboption("privacy", DynamicList, "stun_servers_v6", translate("STUN Servers IPv6"),
+        translate("Override default IPv6 STUN servers. Leave empty for defaults "
+                .. "(--stun-servers-v6 parameter)"))
+stun_servers_v6.placeholder = "stun.cloudflare.com:3478"
+stun_servers_v6:depends("etcmd", "etcmd")
+
+tcp_stun_servers = s:taboption("privacy", DynamicList, "tcp_stun_servers", translate("TCP STUN Servers"),
+        translate("Override default TCP STUN servers. If unset, TCP STUN uses STUN Servers when configured "
+                .. "(--tcp-stun-servers parameter)"))
+tcp_stun_servers.placeholder = "stun.l.google.com:19302"
+tcp_stun_servers:depends("etcmd", "etcmd")
 
 extra_args = s:taboption("privacy", DynamicList, "extra_args", translate("Extra Parameters"),
     translate("Additional command-line arguments passed to the backend process"))
