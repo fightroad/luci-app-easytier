@@ -561,6 +561,30 @@ function saveConfig() {
 	xhr.send(JSON.stringify(data));
 }
 
+function persistProgramConfig() {
+	var webbinInput = document.getElementById('webbin');
+	var data = {
+		easytierbin: document.getElementById('easytierbin').value || '/usr/bin/easytier-core',
+		webbin: (webbinInput && webbinInput.value) || originalConfig.webbin || '/usr/bin/easytier-web',
+		github_proxys: proxyList,
+		fallback_version: versionManager.getCurrentVersion() || 'v2.7.0'
+	};
+	var xhr = new XMLHttpRequest();
+	xhr.open('POST', '<%=url("admin", "vpn", "easytier", "save_upload_config")%>', true);
+	xhr.setRequestHeader('Content-Type', 'application/json');
+	xhr.onload = function() {
+		if (xhr.status === 200) {
+			try {
+				var response = JSON.parse(xhr.responseText);
+				if (response.success) {
+					originalConfig = getCurrentConfig();
+				}
+			} catch (e) {}
+		}
+	};
+	xhr.send(JSON.stringify(data));
+}
+
 var proxyList = [];
 var alertBox, restartModal;
 
@@ -783,8 +807,9 @@ function startDownload() {
 		return;
 	}
 
-	// 同步回主页面的程序版本
+	// 同步回主页面的程序版本，并写入 UCI，供缺程序时自动补装使用
 	versionManager.setVersion(version);
+	persistProgramConfig();
 	
 	// 显示进度条
 	var progress = document.getElementById('download_progress');

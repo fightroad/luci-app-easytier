@@ -15,7 +15,7 @@ OpenWrt LuCI web interface for managing [EasyTier](https://github.com/fightroad/
 - 🌍 Full Chinese/English internationalization support
 - 📊 Real-time traffic monitoring and network interface status display
 - 🔄 Real-time performance metrics and version information
-- 📦 Support for compressed packages and binary file uploads
+- 📥 Online download of EasyTier binaries
 - 🔧 Flexible configuration management with backup and restore
 
 ## 📋 Compatibility
@@ -47,7 +47,7 @@ apk add --allow-untrusted /tmp/luci-app-easytier_*.apk
 ```
 
 4. Refresh your browser or re-login to LuCI interface
-5. Upload EasyTier binary in **VPN → EasyTier**
+5. Open **VPN → EasyTier → Program Management**, set the version tag, and use **Online Download**
 
 ### Method 2: GitHub Actions Auto-build
 
@@ -184,7 +184,7 @@ luci-app-easytier/
 │   └── view/easytier/
 │       ├── easytier_status.htm   # Status page template
 │       ├── easytier_log.htm      # Log page
-│       ├── easytier_upload.htm   # Upload page
+│       ├── easytier_upload.htm   # Program management page
 │       └── ...
 ├── root/
 │   ├── etc/

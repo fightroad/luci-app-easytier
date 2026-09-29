@@ -21,7 +21,7 @@ OpenWrt LuCI界面，用于管理 [EasyTier](https://github.com/fightroad/EasyTi
 - 🌍 完整的中文/英文国际化支持
 - 📊 实时流量监控和网卡状态显示
 - 🔄 实时显示性能占用和版本信息
-- 📦 支持压缩包和二进制文件上传
+- 📥 支持在线下载 EasyTier 程序
 - 🔧 灵活的配置管理和备份恢复
 
 ## 📋 兼容性
@@ -53,7 +53,7 @@ apk add --allow-untrusted /tmp/luci-app-easytier_*.apk
 ```
 
 4. 刷新浏览器或重新登录LuCI界面
-5. 在 **VPN → EasyTier** 中上传EasyTier二进制程序
+5. 在 **VPN → EasyTier → 程序管理** 中填写版本号并「在线下载」程序
 
 ### 方式二：GitHub Actions自动编译
 
@@ -190,7 +190,7 @@ luci-app-easytier/
 │   └── view/easytier/
 │       ├── easytier_status.htm   # 状态页面模板
 │       ├── easytier_log.htm      # 日志页面
-│       ├── easytier_upload.htm   # 上传页面
+│       ├── easytier_upload.htm   # 程序管理页面
 │       └── ...
 ├── root/
 │   ├── etc/
