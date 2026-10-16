@@ -909,12 +909,12 @@ msgstr "用于在同一台机器中标识此 VPN 节点的实例名称（-m 参�
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:213
 
 msgid "VPN Portal URL"
-msgstr "VPN门户URL"
+msgstr "VPN 门户 URL"
 
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua
 
 msgid "VPN Portal Private Key"
-msgstr "VPN门户私钥"
+msgstr "VPN 门户私钥"
 
 msgid ""
 "Base64 WireGuard server private key required by EasyTier 2.7 when VPN Portal URL is set "
@@ -924,7 +924,7 @@ msgstr ""
 "（ET_VPN_PORTAL_PRIVATE_KEY / --vpn-portal-private-key）。可用 wg genkey 生成"
 
 msgid "VPN Portal Clients"
-msgstr "VPN门户客户端"
+msgstr "VPN 门户客户端"
 
 msgid ""
 "Named WireGuard portal clients in NAME=CIDR form, e.g. alice=10.14.14.5/24 "
@@ -936,7 +936,7 @@ msgstr ""
 msgid ""
 "EasyTier 2.7 VPN Portal URL must be listen-only (e.g. wg://0.0.0.0:11013). Put client CIDRs in VPN Portal Clients."
 msgstr ""
-"EasyTier 2.7 的 VPN 门户 URL 只能写监听地址（例如 wg://0.0.0.0:11013），客户端网段请填到「VPN门户客户端」"
+"EasyTier 2.7 的 VPN 门户 URL 只能写监听地址（例如 wg://0.0.0.0:11013），客户端网段请填到「VPN 门户客户端」"
 
 msgid "VPN Portal private key is required when portal URL is set"
 msgstr "已设置 VPN 门户 URL 时必须填写门户私钥"
@@ -1183,7 +1183,7 @@ msgid "only communicate with peers that already establish p2p connection. (--p2p
 msgstr "仅与已经建立P2P连接的对等节点通信（ --p2p-only 参数）"
 
 msgid "Lazy P2P"
-msgstr "按需 P2P"
+msgstr "延迟 P2P"
 
 msgid ""
 "Only try to establish P2P when traffic actually needs the peer; peers marked as need-p2p "
@@ -1191,7 +1191,7 @@ msgid ""
 msgstr "仅在有实际流量需要时才尝试建立 P2P；标记为 need-p2p 的节点仍会主动连接（--lazy-p2p 参数）"
 
 msgid "Need P2P"
-msgstr "需要 P2P"
+msgstr "强制 P2P"
 
 msgid ""
 "Announce that other peers should proactively establish P2P connections to this node "
@@ -2018,6 +2018,54 @@ msgstr "按实例统计接收数据包"
 
 msgid "Traffic Control Packets TX By Instance"
 msgstr "按实例统计发送数据包"
+
+msgid "Traffic Control Bytes Forwarded"
+msgstr "流量控制转发字节数"
+
+msgid "Traffic Control Packets Forwarded"
+msgstr "流量控制转发数据包"
+
+msgid "Traffic Bytes RX By Instance"
+msgstr "按实例统计接收字节数（总计）"
+
+msgid "Traffic Bytes TX By Instance"
+msgstr "按实例统计发送字节数（总计）"
+
+msgid "Traffic Packets RX By Instance"
+msgstr "按实例统计接收数据包（总计）"
+
+msgid "Traffic Packets TX By Instance"
+msgstr "按实例统计发送数据包（总计）"
+
+msgid "Traffic Bytes Foreign Forward RX"
+msgstr "跨网中转接收字节数"
+
+msgid "Traffic Bytes Foreign Forward TX"
+msgstr "跨网中转发送字节数"
+
+msgid "Traffic Bytes Foreign Forward Forwarded"
+msgstr "跨网中转转发字节数"
+
+msgid "Traffic Packets Foreign Forward RX"
+msgstr "跨网中转接收数据包"
+
+msgid "Traffic Packets Foreign Forward TX"
+msgstr "跨网中转发送数据包"
+
+msgid "Traffic Packets Foreign Forward Forwarded"
+msgstr "跨网中转转发数据包"
+
+msgid "UDP Broadcast Relay Packets Captured"
+msgstr "UDP 广播中继捕获数据包"
+
+msgid "UDP Broadcast Relay Packets Forwarded"
+msgstr "UDP 广播中继转发数据包"
+
+msgid "UDP Broadcast Relay Packets Forward Failed"
+msgstr "UDP 广播中继转发失败数据包"
+
+msgid "UDP Broadcast Relay Packets Ignored"
+msgstr "UDP 广播中继忽略数据包"
 
 msgid "From Instance ID"
 msgstr "来源实例ID"
