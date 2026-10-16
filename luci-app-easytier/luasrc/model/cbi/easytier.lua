@@ -44,9 +44,10 @@ end
 
 web_config = s:taboption("general", Value, "web_config", translate("Web Server Address"),
         translate("Web configuration server address. (-w parameter)<br>"
-                .. "For a self-hosted Web server, use the format: udp://server_address:22020/username<br>"
-                .. "For the official Web server, use the format: username"))
-web_config.placeholder = "admin"
+                .. "Since EasyTier 2.7.0 a full URL is required; a username-only value is no longer accepted.<br>"
+                .. "Self-hosted: udp://server_address:22020/username<br>"
+                .. "Official: udp://config-server.easytier.cn:22020/username"))
+web_config.placeholder = "udp://config-server.easytier.cn:22020/my-token"
 web_config:depends("etcmd", "web")
 
 network_name = s:taboption("general", Value, "network_name", translate("Network Name"),
@@ -307,7 +308,7 @@ encryption_algorithm:value("openssl-aes-256-gcm",translate("openssl-aes-256-gcm"
 encryption_algorithm:depends("etcmd", "etcmd")
 
 multi_thread = s:taboption("privacy", Flag, "multi_thread", translate("Enable Multithreading"),
-        translate("Enable multithreaded operation; single-threaded by default (--multi-thread parameter)"))
+        translate("EasyTier 2.7 defaults to multithreaded. This option is always passed explicitly, so leaving it unchecked keeps the process single-threaded (--multi-thread parameter)"))
 multi_thread:depends("etcmd", "etcmd")
 
 multi_thread_count = s:taboption("privacy", Value, "multi_thread_count", translate("Number of Threads"),
@@ -465,6 +466,14 @@ relay_kcp = s:taboption("privacy", Flag, "relay_kcp", translate("Relay foreign n
         translate("If true, allow relay kcp packets from foreign network. default is false (not forward foreign network kcp packets). (--enable-relay-foreign-network-kcp parameter)"))
 relay_kcp:depends("etcmd", "etcmd")
 
+disable_relay_quic = s:taboption("privacy", Flag, "disable_relay_quic", translate("Disable relay quic"),
+        translate("If true, disable relaying quic packets, avoiding consuming too much bandwidth. (--disable-relay-quic parameter)"))
+disable_relay_quic:depends("etcmd", "etcmd")
+
+relay_quic = s:taboption("privacy", Flag, "relay_quic", translate("Relay foreign network quic"),
+        translate("If true, allow relaying quic packets from foreign networks. (--enable-relay-foreign-network-quic parameter)"))
+relay_quic:depends("etcmd", "etcmd")
+
 quic_proxy = s:taboption("privacy", Flag, "quic_proxy", translate("Enable QUIC Proxy"),
         translate("Proxy tcp streams with QUIC, improving the latency and throughput on the network with udp packet loss.<br>"
                 .. "All nodes in the virtual network must be using EasyTier version v2.3.2 or higher for this feature. "
@@ -488,6 +497,12 @@ accept_dns = s:taboption("privacy", Flag, "accept_dns", translate("Enable Magic 
                 .. "Magic DNS will modify your system DNS settings, please enable with caution. (--accept-dns parameter)"))
 accept_dns:depends("etcmd", "etcmd")
 
+tld_dns_zone = s:taboption("privacy", Value, "tld_dns_zone", translate("Magic DNS Zone"),
+        translate("Top level DNS zone used by Magic DNS, default is et.net. Only takes effect when Magic DNS is enabled. "
+                .. "(--tld-dns-zone parameter)"))
+tld_dns_zone.placeholder = "et.net."
+tld_dns_zone:depends("accept_dns", "1")
+
 private_mode = s:taboption("privacy", Flag, "private_mode", translate("Enable Private Mode"),
         translate("When enabled, nodes with a different network name and password are not allowed to handshake or "
                 .. "relay via this node. (--private-mode parameter)"))
@@ -497,6 +512,18 @@ foreign_relay_bps_limit = s:taboption("privacy", Value, "foreign_relay_bps_limit
         translate("the maximum bps limit for foreign network relay, default is no limit. unit: BPS (bytes per second). "
                 .. "(--foreign-relay-bps-limit parameter)"))
 foreign_relay_bps_limit:depends("etcmd", "etcmd")
+
+instance_recv_bps_limit = s:taboption("privacy", Value, "instance_recv_bps_limit", translate("Instance Receive Rate Limit"),
+        translate("the maximum inbound bps limit for this network instance, default is no limit. "
+                .. "unit: BPS (bytes per second). (--instance-recv-bps-limit parameter)"))
+instance_recv_bps_limit.datatype = "uinteger"
+instance_recv_bps_limit:depends("etcmd", "etcmd")
+
+socket_mark = s:taboption("privacy", Value, "socket_mark", translate("Socket Mark"),
+        translate("Set SO_MARK on all underlay sockets, Linux only and requires CAP_NET_ADMIN. "
+                .. "Usually used together with policy routing. (--socket-mark parameter)"))
+socket_mark.datatype = "range(0,4294967295)"
+socket_mark:depends("etcmd", "etcmd")
 
 stun_servers = s:taboption("privacy", DynamicList, "stun_servers", translate("STUN Servers"),
         translate("Override default UDP STUN servers. TCP STUN also uses this list when TCP STUN Servers is unset. "

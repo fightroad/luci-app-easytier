@@ -10,6 +10,9 @@ include $(TOPDIR)/rules.mk
 PKG_VERSION:=$(or $(EASYTIER_VERSION),2.7.0)
 PKG_RELEASE:=1
 
+# Keep the i18n ipk filename on the plugin version instead of the LuCI feed git stamp
+PKG_PO_VERSION:=$(PKG_VERSION)
+
 LUCI_TITLE:=LuCI support for EasyTier
 LUCI_DEPENDS:=+kmod-tun +luci-compat
 LUCI_PKGARCH:=all

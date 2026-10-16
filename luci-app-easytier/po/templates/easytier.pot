@@ -485,8 +485,9 @@ msgstr ""
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:248
 
 msgid ""
-"Enable multithreaded operation; single-threaded by default (--multi-thread "
-"parameter)"
+"EasyTier 2.7 defaults to multithreaded. This option is always passed "
+"explicitly, so leaving it unchecked keeps the process single-threaded (--"
+"multi-thread parameter)"
 msgstr ""
 
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:277
@@ -1125,9 +1126,10 @@ msgstr ""
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:65
 
 msgid ""
-"Web configuration server address. (-w parameter)<br>For a self-hosted Web "
-"server, use the format: udp://server_address:22020/username<br>For the "
-"official Web server, use the format: username"
+"Web configuration server address. (-w parameter)<br>Since EasyTier 2.7.0 a "
+"full URL is required; a username-only value is no longer accepted.<br>Self-"
+"hosted: udp://server_address:22020/username<br>Official: udp://config-"
+"server.easytier.cn:22020/username"
 msgstr ""
 
 #: applications/luci-app-easytier/luasrc/model/cbi/easytier.lua:365
@@ -1653,4 +1655,58 @@ msgid "Copied"
 msgstr ""
 
 msgid "Duplicate extra parameter"
+msgstr ""
+
+msgid "Disable relay quic"
+msgstr ""
+
+msgid "If true, disable relaying quic packets, avoiding consuming too much bandwidth. (--disable-relay-quic parameter)"
+msgstr ""
+
+msgid "Relay foreign network quic"
+msgstr ""
+
+msgid "If true, allow relaying quic packets from foreign networks. (--enable-relay-foreign-network-quic parameter)"
+msgstr ""
+
+msgid "Magic DNS Zone"
+msgstr ""
+
+msgid "Top level DNS zone used by Magic DNS, default is et.net. Only takes effect when Magic DNS is enabled. (--tld-dns-zone parameter)"
+msgstr ""
+
+msgid "Instance Receive Rate Limit"
+msgstr ""
+
+msgid "the maximum inbound bps limit for this network instance, default is no limit. unit: BPS (bytes per second). (--instance-recv-bps-limit parameter)"
+msgstr ""
+
+msgid "Socket Mark"
+msgstr ""
+
+msgid "Set SO_MARK on all underlay sockets, Linux only and requires CAP_NET_ADMIN. Usually used together with policy routing. (--socket-mark parameter)"
+msgstr ""
+
+msgid "Heartbeat Minimum Response Time (ms)"
+msgstr ""
+
+msgid "Minimum heartbeat response delay used by the config server when measuring client latency"
+msgstr ""
+
+msgid "Heartbeat Timeout (ms)"
+msgstr ""
+
+msgid "How long a client may stay silent before the config server marks it offline"
+msgstr ""
+
+msgid "Gateway Peer URL"
+msgstr ""
+
+msgid "Peer URL used by this web instance when it works as a gateway"
+msgstr ""
+
+msgid "Gateway Relay Data"
+msgstr ""
+
+msgid "Allow this web gateway instance to relay data traffic"
 msgstr ""

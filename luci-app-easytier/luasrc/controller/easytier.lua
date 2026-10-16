@@ -521,6 +521,10 @@ function get_web_config()
 		web_geoip_db = uci:get_first("easytier", "easytier", "web_geoip_db") or "",
 		web_disable_registration = uci:get_first("easytier", "easytier", "web_disable_registration") or "0",
 		web_allow_auto_create_user = uci:get_first("easytier", "easytier", "web_allow_auto_create_user") or "0",
+		web_heartbeat_min_response_ms = uci:get_first("easytier", "easytier", "web_heartbeat_min_response_ms") or "",
+		web_heartbeat_timeout_ms = uci:get_first("easytier", "easytier", "web_heartbeat_timeout_ms") or "",
+		web_gateway_peer_url = uci:get_first("easytier", "easytier", "web_gateway_peer_url") or "",
+		web_gateway_relay_data = uci:get_first("easytier", "easytier", "web_gateway_relay_data") or "0",
 		web_weblog = uci:get_first("easytier", "easytier", "web_weblog") or "off",
 		-- OIDC配置
 		web_oidc_enabled = uci:get_first("easytier", "easytier", "web_oidc_enabled") or "0",
@@ -562,6 +566,10 @@ function save_web_config()
 	local web_geoip_db = http.formvalue("web_geoip_db") or ""
 	local web_disable_registration = http.formvalue("web_disable_registration") or "0"
 	local web_allow_auto_create_user = http.formvalue("web_allow_auto_create_user") or "0"
+	local web_heartbeat_min_response_ms = http.formvalue("web_heartbeat_min_response_ms") or ""
+	local web_heartbeat_timeout_ms = http.formvalue("web_heartbeat_timeout_ms") or ""
+	local web_gateway_peer_url = http.formvalue("web_gateway_peer_url") or ""
+	local web_gateway_relay_data = http.formvalue("web_gateway_relay_data") or "0"
 	local web_weblog = http.formvalue("web_weblog") or "off"
 	-- OIDC
 	local web_oidc_enabled = http.formvalue("web_oidc_enabled") or "0"
@@ -595,6 +603,10 @@ function save_web_config()
 	uci:set("easytier", "@easytier[0]", "web_geoip_db", web_geoip_db)
 	uci:set("easytier", "@easytier[0]", "web_disable_registration", web_disable_registration)
 	uci:set("easytier", "@easytier[0]", "web_allow_auto_create_user", web_allow_auto_create_user)
+	uci:set("easytier", "@easytier[0]", "web_heartbeat_min_response_ms", web_heartbeat_min_response_ms)
+	uci:set("easytier", "@easytier[0]", "web_heartbeat_timeout_ms", web_heartbeat_timeout_ms)
+	uci:set("easytier", "@easytier[0]", "web_gateway_peer_url", web_gateway_peer_url)
+	uci:set("easytier", "@easytier[0]", "web_gateway_relay_data", web_gateway_relay_data)
 	uci:set("easytier", "@easytier[0]", "web_weblog", web_weblog)
 	-- OIDC
 	uci:set("easytier", "@easytier[0]", "web_oidc_enabled", web_oidc_enabled)

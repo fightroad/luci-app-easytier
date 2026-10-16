@@ -189,7 +189,10 @@ check_config() {
                    wireguard_port="$vpn_portal_port"
                    log="$(uci -q get easytier.@easytier[0].log || echo off)"
                    echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 检测配置文件可用性 ${easytierbin} --check-config --config-file ${config_file}" >>/tmp/easytier.log
-                   ${easytierbin} --check-config --config-file ${config_file} >> /tmp/easytier.log 2>&1 &
+                   ${easytierbin} --check-config --config-file ${config_file} >> /tmp/easytier.log 2>&1
+                   if [ "$?" != "0" ] ; then
+                   	echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 配置文件 ${config_file} 校验失败，请查看上方 easytier-core 的报错。EasyTier 2.7 起旧版 [vpn_portal_config] client_cidr 或 [flags] 未知键都会导致解析失败" >>/tmp/easytier.log
+                   fi
                    
 		   echo "$(date '+%Y-%m-%d %H:%M:%S') easytier : 开始运行 ${easytierbin} -c ${config_file}" >>/tmp/easytier.log
                    procd_open_instance
@@ -273,10 +276,13 @@ get_etconfig() {
 		proxy_forward="$(uci -q get easytier.@easytier[0].proxy_forward || echo 0)"
 		port_forward="$(uci -q get easytier.@easytier[0].port_forward)"
 		accept_dns="$(uci -q get easytier.@easytier[0].accept_dns || echo 0)"
+		tld_dns_zone="$(uci -q get easytier.@easytier[0].tld_dns_zone)"
 		private_mode="$(uci -q get easytier.@easytier[0].private_mode || echo 0)"
 		quic_proxy="$(uci -q get easytier.@easytier[0].quic_proxy || echo 0)"
 		quic_input="$(uci -q get easytier.@easytier[0].quic_input || echo 0)"
 		foreign_relay_bps_limit="$(uci -q get easytier.@easytier[0].foreign_relay_bps_limit)"
+		instance_recv_bps_limit="$(uci -q get easytier.@easytier[0].instance_recv_bps_limit)"
+		socket_mark="$(uci -q get easytier.@easytier[0].socket_mark)"
 		extra_args="$(uci -q get easytier.@easytier[0].extra_args)"
 		encryption_algorithm="$(uci -q get easytier.@easytier[0].encryption_algorithm)"
 		
@@ -290,6 +296,8 @@ get_etconfig() {
 		tcp_white_port="$(uci -q get easytier.@easytier[0].tcp_white_port)"
 		disable_relay_kcp="$(uci -q get easytier.@easytier[0].disable_relay_kcp || echo 0)"
 		relay_kcp="$(uci -q get easytier.@easytier[0].relay_kcp || echo 0)"
+		disable_relay_quic="$(uci -q get easytier.@easytier[0].disable_relay_quic || echo 0)"
+		relay_quic="$(uci -q get easytier.@easytier[0].relay_quic || echo 0)"
 		stun_servers="$(uci -q get easytier.@easytier[0].stun_servers)"
 		stun_servers_v6="$(uci -q get easytier.@easytier[0].stun_servers_v6)"
 		tcp_stun_servers="$(uci -q get easytier.@easytier[0].tcp_stun_servers)"
@@ -609,7 +617,12 @@ start_et() {
 				[ "$default_protocol" = "-" ] || core_cmd="${core_cmd} --default-protocol $default_protocol"
 				[ -z "$tunname" ] || core_cmd="${core_cmd} --dev-name $tunname"
 				[ "$disable_encryption" = "0" ] || core_cmd="${core_cmd} -u"
-				[ "$multi_thread" = "0" ] || core_cmd="${core_cmd} --multi-thread"
+				# 2.7 默认多线程；不勾选时也要显式传 false，否则界面和实际不一致
+				if [ "$multi_thread" = "0" ]; then
+					core_cmd="${core_cmd} --multi-thread false"
+				else
+					core_cmd="${core_cmd} --multi-thread true"
+				fi
 				[ -z "$multi_thread_count" ] || core_cmd="${core_cmd} --multi-thread-count $multi_thread_count"
 				[ "$no_tun" = "0" ] || core_cmd="${core_cmd} --no-tun"
 				[ "$smoltcp" = "0" ] || core_cmd="${core_cmd} --use-smoltcp"
@@ -629,10 +642,15 @@ start_et() {
 				[ "$kcp_input" = "0" ] || core_cmd="${core_cmd} --disable-kcp-input"
 				[ "$proxy_forward" = "0" ] || core_cmd="${core_cmd} --proxy-forward-by-system"
 				[ "$accept_dns" = "0" ] || core_cmd="${core_cmd} --accept-dns true"
+				if [ "$accept_dns" != "0" ] && [ -n "$tld_dns_zone" ]; then
+					core_cmd="${core_cmd} --tld-dns-zone $(shell_quote "$tld_dns_zone")"
+				fi
 				[ "$private_mode" = "0" ] || core_cmd="${core_cmd} --private-mode true"
 				[ "$quic_proxy" = "0" ] || core_cmd="${core_cmd} --enable-quic-proxy"
 				[ "$quic_input" = "0" ] || core_cmd="${core_cmd} --disable-quic-input"
 				[ -z "$foreign_relay_bps_limit" ] || core_cmd="${core_cmd} --foreign-relay-bps-limit $foreign_relay_bps_limit"
+				[ -z "$instance_recv_bps_limit" ] || core_cmd="${core_cmd} --instance-recv-bps-limit $instance_recv_bps_limit"
+				[ -z "$socket_mark" ] || core_cmd="${core_cmd} --socket-mark $socket_mark"
 				if [ -n "$encryption_algorithm" ] && [ "$encryption_algorithm" != "aes-gcm" ]; then
 					core_cmd="${core_cmd} --encryption-algorithm ${encryption_algorithm}"
 				fi
@@ -645,6 +663,8 @@ start_et() {
 				[ "$disable_sym" = "0" ] || core_cmd="${core_cmd} --disable-sym-hole-punching"
 				[ "$disable_relay_kcp" = "0" ] || core_cmd="${core_cmd} --disable-relay-kcp true"
 				[ "$relay_kcp" = "0" ] || core_cmd="${core_cmd} --enable-relay-foreign-network-kcp true"
+				[ "$disable_relay_quic" = "0" ] || core_cmd="${core_cmd} --disable-relay-quic true"
+				[ "$relay_quic" = "0" ] || core_cmd="${core_cmd} --enable-relay-foreign-network-quic true"
 				[ -z "$udp_white_port" ] || core_cmd="${core_cmd} --udp-whitelist $udp_white_port"
 				[ -z "$tcp_white_port" ] || core_cmd="${core_cmd} --tcp-whitelist $tcp_white_port"
 				append_uci_list_flag "stun_servers" "--stun-servers" "$stun_servers"
@@ -765,6 +785,10 @@ start_web() {
 	html_addr="$(uci -q get easytier.@easytier[0].web_html_addr)"
 	disable_registration="$(uci -q get easytier.@easytier[0].web_disable_registration || echo 0)"
 	allow_auto_create_user="$(uci -q get easytier.@easytier[0].web_allow_auto_create_user || echo 0)"
+	heartbeat_min_response_ms="$(uci -q get easytier.@easytier[0].web_heartbeat_min_response_ms)"
+	heartbeat_timeout_ms="$(uci -q get easytier.@easytier[0].web_heartbeat_timeout_ms)"
+	gateway_peer_url="$(uci -q get easytier.@easytier[0].web_gateway_peer_url)"
+	gateway_relay_data="$(uci -q get easytier.@easytier[0].web_gateway_relay_data || echo 0)"
 	# OIDC配置
 	oidc_enabled="$(uci -q get easytier.@easytier[0].web_oidc_enabled || echo 0)"
 	oidc_issuer_url="$(uci -q get easytier.@easytier[0].web_oidc_issuer_url)"
@@ -803,6 +827,10 @@ start_web() {
 	[ -n "$html_addr" ] && [ "$html_addr" != "0.0.0.0" ] && web_cmd="${web_cmd} --web-server-addr $html_addr"
 	[ "$disable_registration" = "1" ] && web_cmd="${web_cmd} --disable-registration"
 	[ "$allow_auto_create_user" = "1" ] && web_cmd="${web_cmd} --allow-auto-create-user"
+	echo "$heartbeat_min_response_ms" | grep -Eq '^[0-9]+$' && web_cmd="${web_cmd} --heartbeat-min-response-ms $heartbeat_min_response_ms"
+	echo "$heartbeat_timeout_ms" | grep -Eq '^[0-9]+$' && web_cmd="${web_cmd} --heartbeat-timeout-ms $heartbeat_timeout_ms"
+	[ -z "$gateway_peer_url" ] || web_cmd="${web_cmd} --gateway-peer-url $(shell_quote "$gateway_peer_url")"
+	[ "$gateway_relay_data" = "1" ] && web_cmd="${web_cmd} --gateway-relay-data true"
 	# OIDC配置参数
 	if [ "$oidc_enabled" = "1" ] ; then
 		[ -z "$oidc_issuer_url" ] || web_cmd="${web_cmd} --oidc-issuer-url $oidc_issuer_url"
